@@ -29,7 +29,7 @@ export async function getPhoneNumberInfo(): Promise<{
 }> {
   const apiKey = process.env.YCLOUD_API_KEY!;
   const phone = process.env.YCLOUD_PHONE_NUMBER!;
-  const res = await fetch(`${BASE}/whatsapp/phone-numbers?page=1&limit=10`, {
+  const res = await fetch(`${BASE}/whatsapp/phoneNumbers?page=1&limit=20`, {
     headers: { "X-API-Key": apiKey },
   });
   if (!res.ok) throw new Error(`YCloud ${res.status}: ${await res.text()}`);
