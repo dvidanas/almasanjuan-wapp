@@ -3,7 +3,7 @@ import { SYSTEM_PROMPT } from "./system-prompt";
 
 const client = new OpenAI({
   apiKey: process.env.GEMINI_API_KEY ?? "",
-  baseURL: "https://generativelanguage.googleapis.com/v1beta/openai",
+  baseURL: "https://generativelanguage.googleapis.com/v1/openai/",
 });
 
 export interface ChatMessage {
@@ -14,7 +14,7 @@ export interface ChatMessage {
 export async function getChatCompletion(
   history: ChatMessage[]
 ): Promise<string> {
-  const model = process.env.GEMINI_MODEL ?? "gemini-1.5-flash";
+  const model = process.env.GEMINI_MODEL ?? "gemini-2.0-flash";
   console.log("[llm] usando modelo:", model);
   const start = Date.now();
   const response = await client.chat.completions.create({
