@@ -3,7 +3,7 @@ import { SYSTEM_PROMPT } from "./system-prompt";
 
 const client = new OpenAI({
   apiKey: process.env.GEMINI_API_KEY ?? "",
-  baseURL: "https://generativelanguage.googleapis.com/v1beta/openai/",
+  baseURL: "https://generativelanguage.googleapis.com/v1beta/openai",
 });
 
 export interface ChatMessage {
