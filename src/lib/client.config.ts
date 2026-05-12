@@ -79,6 +79,9 @@ export const clientConfig = {
         ¿me dejás tu número de WhatsApp o ya estamos hablando por ahí?"
       - Una vez que deja el teléfono, confirmar que el equipo
         se va a comunicar a la brevedad.
+      - Cuando el contacto comparta su número de teléfono,
+        confirmar que el equipo lo va a contactar y despedirse
+        de forma cálida.
     `,
 
     cannotDo: `

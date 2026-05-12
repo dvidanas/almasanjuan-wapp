@@ -1,6 +1,7 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { clientConfig } from "@/lib/client.config";
 
 interface ConnectionStatus {
@@ -18,6 +19,14 @@ export function DashboardHeader({ initialStatus }: Props) {
   const router = useRouter();
   const [status, setStatus] = useState<ConnectionStatus>(initialStatus);
   const [checking, setChecking] = useState(false);
+  const [newLeads, setNewLeads] = useState(0);
+
+  useEffect(() => {
+    fetch("/api/leads/stats")
+      .then((r) => r.json())
+      .then((stats) => setNewLeads(stats.nuevo ?? 0))
+      .catch(() => null);
+  }, []);
 
   async function checkConnection() {
     setChecking(true);
@@ -68,6 +77,19 @@ export function DashboardHeader({ initialStatus }: Props) {
 
       {/* Estado + acciones */}
       <div className="flex items-center gap-3">
+        {/* Link a Leads */}
+        <Link
+          href="/leads"
+          className="relative text-xs px-3 py-1.5 border border-gray-200 rounded-lg text-gray-600 hover:bg-gray-50 transition-colors"
+        >
+          Leads
+          {newLeads > 0 && (
+            <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-yellow-400 text-gray-900 text-[10px] font-bold flex items-center justify-center">
+              {newLeads > 9 ? "9+" : newLeads}
+            </span>
+          )}
+        </Link>
+
         {/* Indicador de estado */}
         <div className="hidden sm:flex items-center gap-1.5">
           <span

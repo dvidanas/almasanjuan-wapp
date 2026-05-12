@@ -5,6 +5,7 @@ interface Conversation {
   phone: string;
   name: string | null;
   mode: "AI" | "HUMAN";
+  has_lead: number;
   last_message_at: number | null;
   created_at: number;
 }
@@ -91,6 +92,11 @@ export function ConversationList({ conversations, selectedId, onSelect }: Props)
                   />
                   {c.mode === "AI" ? "IA" : "HUMANO"}
                 </span>
+                {c.has_lead === 1 && (
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-yellow-100 text-yellow-700">
+                    LEAD
+                  </span>
+                )}
                 <span className="text-xs text-gray-400 truncate">
                   +{c.phone}
                 </span>

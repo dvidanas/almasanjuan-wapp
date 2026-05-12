@@ -6,9 +6,14 @@ import {
   insertMessage,
   updateMessageWaId,
   getRecentHistory,
+  createLead,
+  setConversationHasLead,
+  getLeadByConversationId,
 } from "@/lib/db";
 import { getChatCompletion, type ChatMessage } from "@/lib/gemini";
 import { sendTextMessage } from "./client";
+
+const PHONE_RE = /(\+?[\d\s\-\(\)]{8,15})/;
 
 export async function processWebhookPayload(payload: unknown): Promise<void> {
   const p = payload as Record<string, unknown>;
@@ -67,14 +72,28 @@ async function handleIncomingMessage(
   // 6. Guardar mensaje del usuario
   insertMessage(convo.id, "user", text, waId);
 
-  // 7. Re-leer modo (puede haber cambiado)
+  // 7. Detección de teléfono para captura de lead
+  if (!convo.has_lead) {
+    const match = text.match(PHONE_RE);
+    if (match) {
+      const capturedPhone = match[1].replace(/[\s\-\(\)]/g, "");
+      const existingLead = getLeadByConversationId(convo.id);
+      if (!existingLead) {
+        createLead(convo.id, capturedPhone, senderName);
+        setConversationHasLead(convo.id, 1);
+        console.log(`[lead] capturado de +${phone}: ${capturedPhone}`);
+      }
+    }
+  }
+
+  // 8. Re-leer modo (puede haber cambiado)
   const fresh = getConversationById(convo.id);
   if (!fresh || fresh.mode !== "AI") {
     console.log(`[wh] modo ${fresh?.mode ?? "?"} — sin respuesta automática`);
     return;
   }
 
-  // 8. Construir historial y llamar a Gemini
+  // 9. Construir historial y llamar a Gemini
   const history = getRecentHistory(convo.id, 20);
   const chatHistory: ChatMessage[] = history.map((m) => ({
     role: m.role === "user" ? "user" : "assistant",
@@ -90,10 +109,10 @@ async function handleIncomingMessage(
     return;
   }
 
-  // 9. Guardar respuesta del asistente
+  // 10. Guardar respuesta del asistente
   const messageId = insertMessage(convo.id, "assistant", reply, null);
 
-  // 10. Enviar por WhatsApp y actualizar wa_message_id
+  // 11. Enviar por WhatsApp y actualizar wa_message_id
   try {
     const { wa_message_id } = await sendTextMessage(phone, reply);
     updateMessageWaId(messageId, wa_message_id);

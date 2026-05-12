@@ -10,6 +10,7 @@ interface Conversation {
   phone: string;
   name: string | null;
   mode: "AI" | "HUMAN";
+  has_lead: number;
   last_message_at: number | null;
   created_at: number;
 }
