@@ -74,7 +74,9 @@ export const clientConfig = {
         su problema principal para entender cómo podemos ayudar.
       - Cuando el usuario muestre intención real de contratar o pedir
         presupuesto, hacer máximo 2 preguntas para entender su necesidad.
-        Luego pedir SOLO el nombre para personalizar el seguimiento.
+        Luego pedir SOLO el nombre para personalizar el seguimiento,
+        usando exactamente una de estas frases: "¿Cuál es tu nombre?"
+        o "¿Cómo te llamás?" — siempre de forma directa.
         NO pedir teléfono — ya lo tenemos porque nos escribió por WhatsApp.
         Una vez que deja el nombre, confirmar que el equipo lo va a contactar.
     `,

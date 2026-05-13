@@ -22,19 +22,41 @@ const INTENT_KEYWORDS = [
   "reunión", "reunion", "hablar", "llamar",
 ];
 
+const NOT_A_NAME = [
+  "gracias", "ok", "si", "no", "dale", "bueno", "listo",
+  "perfecto", "genial", "bien", "claro", "obvio", "nada",
+  "hola", "chau", "adios", "jaja", "jeje", "oka", "okey",
+  "entendido", "de nada", "por favor", "porfa", "este",
+  "ese", "eso", "acá", "ahi", "ahí", "ya", "igual",
+  "después", "despues", "ahora", "luego", "mañana",
+];
+
+const NAME_ASK_KEYWORDS = [
+  "nombre", "llamás", "llamas", "identificarte", "cómo te", "como te",
+];
+
 function hasLeadIntent(text: string): boolean {
   const lower = text.toLowerCase();
   return INTENT_KEYWORDS.some((kw) => lower.includes(kw));
 }
 
-function looksLikeName(text: string): boolean {
+function isRealName(name: string | null): boolean {
+  if (!name) return false;
+  return !/^\+?[\d\s\-()+]+$/.test(name);
+}
+
+function looksLikeName(text: string, lastBotMessage: string | null): boolean {
+  if (!lastBotMessage) return false;
+  const lastLower = lastBotMessage.toLowerCase();
+  if (!NAME_ASK_KEYWORDS.some((kw) => lastLower.includes(kw))) return false;
+
   const t = text.trim();
-  return (
-    t.length > 0 &&
-    t.length < 40 &&
-    !t.includes("?") &&
-    !hasLeadIntent(t)
-  );
+  if (t.length < 2 || t.length > 40) return false;
+  if (/[0-9]/.test(t)) return false;
+  if (/[?!]/.test(t)) return false;
+  if (NOT_A_NAME.includes(t.toLowerCase())) return false;
+  if (hasLeadIntent(t)) return false;
+  return true;
 }
 
 export async function processWebhookPayload(payload: unknown): Promise<void> {
@@ -94,7 +116,12 @@ async function handleIncomingMessage(
   // 6. Guardar mensaje del usuario
   insertMessage(convo.id, "user", text, waId);
 
-  // 7. Captura de lead por intención real
+  // 7. Obtener historial (incluye el mensaje recién insertado)
+  const history = getRecentHistory(convo.id, 20);
+  const lastBotMessage =
+    [...history].reverse().find((m) => m.role === "assistant")?.content ?? null;
+
+  // 8. Captura de lead por intención real
   if (!convo.has_lead && hasLeadIntent(text)) {
     const existingLead = getLeadByConversationId(convo.id);
     if (!existingLead) {
@@ -104,24 +131,23 @@ async function handleIncomingMessage(
     }
   }
 
-  // 8. Si ya hay lead y el mensaje parece un nombre, actualizar
-  if (convo.has_lead && looksLikeName(text)) {
+  // 9. Si ya hay lead y el mensaje parece un nombre, actualizar
+  if (convo.has_lead && looksLikeName(text, lastBotMessage)) {
     const lead = getLeadByConversationId(convo.id);
-    if (lead) {
+    if (lead && !isRealName(lead.name)) {
       updateLead(lead.id, { name: text.trim() });
       console.log(`[lead] nombre actualizado → ${text.trim()}`);
     }
   }
 
-  // 9. Re-leer modo (puede haber cambiado)
+  // 10. Re-leer modo (puede haber cambiado)
   const fresh = getConversationById(convo.id);
   if (!fresh || fresh.mode !== "AI") {
     console.log(`[wh] modo ${fresh?.mode ?? "?"} — sin respuesta automática`);
     return;
   }
 
-  // 10. Construir historial y llamar a Gemini
-  const history = getRecentHistory(convo.id, 20);
+  // 11. Construir historial y llamar a Gemini
   const chatHistory: ChatMessage[] = history.map((m) => ({
     role: m.role === "user" ? "user" : "assistant",
     content: m.content,
@@ -139,10 +165,10 @@ async function handleIncomingMessage(
   // Eliminar saltos de línea para respuesta de párrafo único
   const reply = rawReply.replace(/\n+/g, " ").trim();
 
-  // 11. Guardar respuesta del asistente
+  // 12. Guardar respuesta del asistente
   const messageId = insertMessage(convo.id, "assistant", reply, null);
 
-  // 12. Enviar por WhatsApp y actualizar wa_message_id
+  // 13. Enviar por WhatsApp y actualizar wa_message_id
   try {
     const { wa_message_id } = await sendTextMessage(phone, reply);
     updateMessageWaId(messageId, wa_message_id);
