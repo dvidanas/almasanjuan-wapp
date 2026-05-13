@@ -40,7 +40,7 @@ export function ConversationList({ conversations, selectedId, onSelect }: Props)
         <li key={c.id}>
           <button
             onClick={() => onSelect(c.id)}
-            className={`w-full text-left px-4 py-3 flex items-center gap-3 hover:bg-[var(--color-wa-hover)] transition-colors border-b border-[var(--color-wa-sep)] ${
+            className={`w-full text-left px-4 py-4 flex items-center gap-3 hover:bg-[var(--color-wa-hover)] active:bg-[var(--color-wa-hover)] transition-colors border-b border-[var(--color-wa-sep)] min-h-[64px] ${
               selectedId === c.id ? "bg-[var(--color-wa-hover)]" : ""
             }`}
           >

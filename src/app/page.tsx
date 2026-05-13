@@ -4,6 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { ConnectionGate } from "@/components/ConnectionGate";
 import { Sidebar } from "@/components/Sidebar";
+import { BottomNav } from "@/components/BottomNav";
 import { ConversationList } from "@/components/ConversationList";
 import { ConversationPanel } from "@/components/ConversationPanel";
 
@@ -24,6 +25,7 @@ function Dashboard({ connectionStatus }: { connectionStatus: { status: string; p
     const id = searchParams.get("id");
     return id ? parseInt(id, 10) : null;
   });
+  const [mobileView, setMobileView] = useState<"list" | "conversation">("list");
 
   const fetchConversations = useCallback(async () => {
     try {
@@ -37,7 +39,6 @@ function Dashboard({ connectionStatus }: { connectionStatus: { status: string; p
     }
   }, []);
 
-  // Carga inicial + polling cada 2s
   useEffect(() => {
     fetchConversations();
     const interval = setInterval(fetchConversations, 2000);
@@ -45,6 +46,15 @@ function Dashboard({ connectionStatus }: { connectionStatus: { status: string; p
   }, [fetchConversations]);
 
   const selectedConversation = conversations.find((c) => c.id === selectedId) ?? null;
+
+  function handleSelect(id: number) {
+    setSelectedId(id);
+    setMobileView("conversation");
+  }
+
+  function handleBack() {
+    setMobileView("list");
+  }
 
   function handleModeChange(id: number, mode: "AI" | "HUMAN") {
     setConversations((prev) =>
@@ -54,18 +64,24 @@ function Dashboard({ connectionStatus }: { connectionStatus: { status: string; p
 
   function handleDelete(id: number) {
     setConversations((prev) => prev.filter((c) => c.id !== id));
-    if (selectedId === id) setSelectedId(null);
+    if (selectedId === id) {
+      setSelectedId(null);
+      setMobileView("list");
+    }
   }
 
   return (
-    <div className="flex h-screen bg-[var(--color-wa-bg-main)]">
-      {/* 1. Columna izquierda angosta */}
+    <div className="flex h-[calc(100vh-60px)] md:h-screen bg-[var(--color-wa-bg-main)]">
+      {/* 1. Sidebar — hidden on mobile, icon-only on tablet, full on desktop */}
       <Sidebar />
 
-      {/* 2. Columna central */}
-      <aside className="w-[340px] flex-shrink-0 bg-[var(--color-wa-panel-l)] border-r border-[var(--color-wa-sep)] flex flex-col">
-        {/* Pequeño header superior con conexión */}
-        <div className="px-4 py-3 bg-[var(--color-wa-header)] border-b border-[var(--color-wa-sep)] flex items-center justify-between">
+      {/* 2. List column — full width on mobile, fixed width on md+ */}
+      <aside className={`
+        ${mobileView === "conversation" ? "hidden" : "flex"} md:flex
+        w-full md:w-[340px] md:flex-shrink-0
+        bg-[var(--color-wa-panel-l)] border-r border-[var(--color-wa-sep)] flex-col
+      `}>
+        <div className="px-4 py-3 bg-[var(--color-wa-header)] border-b border-[var(--color-wa-sep)] flex items-center justify-between flex-shrink-0">
           <div>
             <h2 className="text-sm font-semibold text-[var(--color-wa-text-main)]">Chats</h2>
             {connectionStatus.phone && (
@@ -73,12 +89,11 @@ function Dashboard({ connectionStatus }: { connectionStatus: { status: string; p
             )}
           </div>
           <div className="flex items-center gap-2">
-            <span className={`w-2.5 h-2.5 rounded-full ${connectionStatus.status === 'connected' ? 'bg-[var(--color-wa-green)]' : 'bg-red-500'}`} />
+            <span className={`w-2.5 h-2.5 rounded-full ${connectionStatus.status === "connected" ? "bg-[var(--color-wa-green)]" : "bg-red-500"}`} />
           </div>
         </div>
 
-        {/* Buscador ficticio estilo WhatsApp */}
-        <div className="p-2 border-b border-[var(--color-wa-sep)]">
+        <div className="p-2 border-b border-[var(--color-wa-sep)] flex-shrink-0">
           <div className="bg-[var(--color-wa-bg-main)] rounded-lg px-3 py-1.5 flex items-center gap-3">
             <svg className="w-5 h-5 text-[var(--color-wa-text-sec)]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
@@ -91,38 +106,43 @@ function Dashboard({ connectionStatus }: { connectionStatus: { status: string; p
           <ConversationList
             conversations={conversations}
             selectedId={selectedId}
-            onSelect={setSelectedId}
+            onSelect={handleSelect}
           />
         </div>
       </aside>
 
-      {/* 3. Columna derecha */}
-      <main className="flex-1 bg-[var(--color-wa-panel-r)] flex flex-col">
+      {/* 3. Panel column — full width on mobile, flex-1 on md+ */}
+      <main className={`
+        ${mobileView === "list" ? "hidden" : "flex"} md:flex
+        flex-1 bg-[var(--color-wa-panel-r)] flex-col
+      `}>
         {selectedConversation ? (
           <ConversationPanel
             key={selectedConversation.id}
             conversation={selectedConversation}
             onModeChange={handleModeChange}
             onDelete={handleDelete}
+            onBack={handleBack}
           />
         ) : (
           <div className="flex flex-col items-center justify-center h-full text-center px-8 border-b-[6px] border-[var(--color-wa-green)]">
-            <div className="w-[320px] mb-8">
-              {/* WhatsApp like default graphic */}
+            <div className="w-[200px] sm:w-[320px] mb-8">
               <svg viewBox="0 0 100 100" className="w-full text-[var(--color-wa-text-sec)] opacity-20">
                 <circle cx="50" cy="50" r="45" fill="none" stroke="currentColor" strokeWidth="2" />
                 <path d="M50 25v25l15 15" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" />
               </svg>
             </div>
-            <h1 className="text-3xl font-light text-[var(--color-wa-text-main)] mb-4">
+            <h1 className="text-2xl sm:text-3xl font-light text-[var(--color-wa-text-main)] mb-4">
               Feer WhatsApp Agent
             </h1>
             <p className="text-sm text-[var(--color-wa-text-sec)] max-w-md">
-              Seleccioná un chat para ver los mensajes. El bot en modo IA responderá automáticamente a las consultas y registrará leads.
+              Seleccioná un chat para ver los mensajes.
             </p>
           </div>
         )}
       </main>
+
+      <BottomNav />
     </div>
   );
 }

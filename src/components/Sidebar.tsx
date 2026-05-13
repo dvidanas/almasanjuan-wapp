@@ -49,13 +49,13 @@ export function Sidebar({ newLeadsCount: propCount }: { newLeadsCount?: number }
   };
 
   return (
-    <aside className="w-[80px] sm:w-[280px] bg-[var(--color-wa-panel-l)] border-r border-[var(--color-wa-sep)] flex flex-col flex-shrink-0 transition-colors">
+    <aside className="hidden md:flex md:w-16 lg:w-64 bg-[var(--color-wa-panel-l)] border-r border-[var(--color-wa-sep)] flex-col flex-shrink-0 transition-all duration-200">
       {/* Top: Profile / Logo */}
-      <div className="h-16 flex items-center justify-center sm:justify-start px-4 border-b border-[var(--color-wa-sep)] flex-shrink-0">
+      <div className="h-16 flex items-center justify-center lg:justify-start px-4 border-b border-[var(--color-wa-sep)] flex-shrink-0">
         <div className="w-10 h-10 rounded-full bg-[var(--color-wa-green)] flex items-center justify-center text-white font-bold flex-shrink-0">
           F
         </div>
-        <span className="ml-3 font-semibold text-[var(--color-wa-text-main)] hidden sm:block">
+        <span className="ml-3 font-semibold text-[var(--color-wa-text-main)] hidden lg:block">
           Feer
         </span>
       </div>
@@ -72,7 +72,7 @@ export function Sidebar({ newLeadsCount: propCount }: { newLeadsCount?: number }
           <svg className="w-6 h-6 text-[var(--color-wa-text-sec)] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
           </svg>
-          <span className="hidden sm:block font-medium text-[var(--color-wa-text-main)]">Chats</span>
+          <span className="hidden lg:block font-medium text-[var(--color-wa-text-main)]">Chats</span>
         </Link>
 
         <Link
@@ -92,9 +92,9 @@ export function Sidebar({ newLeadsCount: propCount }: { newLeadsCount?: number }
               </span>
             )}
           </div>
-          <span className="hidden sm:block font-medium text-[var(--color-wa-text-main)] flex-1">Leads</span>
+          <span className="hidden lg:block font-medium text-[var(--color-wa-text-main)] flex-1">Leads</span>
           {newLeadsCount > 0 && (
-            <span className="hidden sm:flex bg-[var(--color-wa-green)] text-white text-xs font-bold px-2 py-0.5 rounded-full">
+            <span className="hidden lg:flex bg-[var(--color-wa-green)] text-white text-xs font-bold px-2 py-0.5 rounded-full">
               {newLeadsCount}
             </span>
           )}
@@ -117,7 +117,7 @@ export function Sidebar({ newLeadsCount: propCount }: { newLeadsCount?: number }
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
             </svg>
           )}
-          <span className="hidden sm:block font-medium text-[var(--color-wa-text-main)]">
+          <span className="hidden lg:block font-medium text-[var(--color-wa-text-main)]">
             {isDark ? "Modo Claro" : "Modo Oscuro"}
           </span>
         </button>
@@ -130,7 +130,7 @@ export function Sidebar({ newLeadsCount: propCount }: { newLeadsCount?: number }
           <svg className="w-6 h-6 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
           </svg>
-          <span className="hidden sm:block font-medium">Cerrar sesión</span>
+          <span className="hidden lg:block font-medium">Cerrar sesión</span>
         </button>
       </div>
     </aside>

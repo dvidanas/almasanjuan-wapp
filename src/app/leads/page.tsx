@@ -1,6 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Sidebar } from "@/components/Sidebar";
+import { BottomNav } from "@/components/BottomNav";
 
 interface Lead {
   id: number;
@@ -101,6 +102,7 @@ export default function LeadsPage() {
   const [notes, setNotes] = useState("");
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [copiedPhone, setCopiedPhone] = useState(false);
+  const [mobileView, setMobileView] = useState<"list" | "detail">("list");
 
   const notesTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -197,6 +199,16 @@ export default function LeadsPage() {
     setSelectedId(null);
     setDetail(null);
     setConfirmDelete(false);
+    setMobileView("list");
+  }
+
+  function handleSelectLead(id: number) {
+    setSelectedId(id);
+    setMobileView("detail");
+  }
+
+  function handleBackToList() {
+    setMobileView("list");
   }
 
   async function copyPhone(phone: string) {
@@ -208,11 +220,15 @@ export default function LeadsPage() {
   const newCount = leads.filter((l) => l.status === "nuevo").length;
 
   return (
-    <div className="flex h-screen bg-[var(--color-wa-bg-main)]">
+    <div className="flex h-[calc(100vh-60px)] md:h-screen bg-[var(--color-wa-bg-main)]">
       <Sidebar newLeadsCount={newCount} />
 
       {/* Center column */}
-      <aside className="w-[340px] flex-shrink-0 bg-[var(--color-wa-panel-l)] border-r border-[var(--color-wa-sep)] flex flex-col">
+      <aside className={`
+        ${mobileView === "detail" ? "hidden" : "flex"} md:flex
+        w-full md:w-[340px] md:flex-shrink-0
+        bg-[var(--color-wa-panel-l)] border-r border-[var(--color-wa-sep)] flex-col
+      `}>
         <div className="px-4 py-3 bg-[var(--color-wa-header)] border-b border-[var(--color-wa-sep)]">
           <h2 className="text-sm font-semibold text-[var(--color-wa-text-main)]">Leads</h2>
           <p className="text-xs text-[var(--color-wa-text-sec)]">{leads.length} contactos</p>
@@ -232,8 +248,8 @@ export default function LeadsPage() {
                 return (
                   <li key={lead.id}>
                     <button
-                      onClick={() => setSelectedId(lead.id)}
-                      className={`w-full text-left px-4 py-3 flex items-center gap-3 border-b border-[var(--color-wa-sep)] hover:bg-[var(--color-wa-hover)] transition-colors ${
+                      onClick={() => handleSelectLead(lead.id)}
+                      className={`w-full text-left px-4 py-4 flex items-center gap-3 border-b border-[var(--color-wa-sep)] hover:bg-[var(--color-wa-hover)] active:bg-[var(--color-wa-hover)] transition-colors ${
                         selectedId === lead.id ? "bg-[var(--color-wa-hover)]" : ""
                       }`}
                     >
@@ -272,7 +288,10 @@ export default function LeadsPage() {
       </aside>
 
       {/* Right column: detail */}
-      <main className="flex-1 bg-[var(--color-wa-panel-r)] flex flex-col overflow-y-auto">
+      <main className={`
+        ${mobileView === "list" ? "hidden" : "flex"} md:flex
+        flex-1 bg-[var(--color-wa-panel-r)] flex-col overflow-y-auto
+      `}>
         {!selectedLead ? (
           <div className="flex flex-col items-center justify-center h-full text-center px-8">
             <svg className="w-16 h-16 text-[var(--color-wa-text-sec)] opacity-20 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -289,6 +308,17 @@ export default function LeadsPage() {
           </div>
         ) : (
           <div className="p-5 max-w-2xl w-full mx-auto space-y-4 pb-12">
+
+            {/* Mobile back button */}
+            <button
+              onClick={handleBackToList}
+              className="md:hidden flex items-center gap-2 text-sm text-[var(--color-wa-text-sec)] active:text-[var(--color-wa-text-main)] -mt-1 mb-1 min-h-[44px]"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
+              Volver a leads
+            </button>
 
             {/* HEADER */}
             <div className="bg-[var(--color-wa-panel-l)] rounded-xl border border-[var(--color-wa-sep)] p-5 flex items-start justify-between gap-4">
@@ -531,6 +561,8 @@ export default function LeadsPage() {
           </div>
         )}
       </main>
+
+      <BottomNav />
     </div>
   );
 }

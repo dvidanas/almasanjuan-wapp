@@ -33,8 +33,8 @@ function LoginForm() {
 
   return (
     <div className="min-h-screen bg-[var(--color-wa-bg-main)] flex items-center justify-center px-4">
-      <div className="w-full max-w-sm">
-        <div className="bg-[var(--color-wa-panel-l)] rounded-xl shadow-lg border border-[var(--color-wa-sep)] px-8 py-10">
+      <div className="w-full max-w-sm px-4 sm:px-0">
+        <div className="bg-[var(--color-wa-panel-l)] rounded-xl shadow-lg border border-[var(--color-wa-sep)] px-6 sm:px-8 py-10">
           {/* Header */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[var(--color-wa-green)] mb-4">
@@ -61,7 +61,7 @@ function LoginForm() {
                 type="text"
                 autoComplete="username"
                 required
-                className="w-full px-3 py-2.5 bg-[var(--color-wa-input)] border border-[var(--color-wa-sep)] rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-wa-green)] focus:border-transparent text-[var(--color-wa-text-main)] placeholder-[var(--color-wa-text-sec)]"
+                className="w-full px-3 py-2.5 bg-[var(--color-wa-input)] border border-[var(--color-wa-sep)] rounded-lg text-base sm:text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-wa-green)] focus:border-transparent text-[var(--color-wa-text-main)] placeholder-[var(--color-wa-text-sec)]"
                 placeholder="admin"
               />
             </div>
@@ -79,7 +79,7 @@ function LoginForm() {
                 type="password"
                 autoComplete="current-password"
                 required
-                className="w-full px-3 py-2.5 bg-[var(--color-wa-input)] border border-[var(--color-wa-sep)] rounded-lg text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-wa-green)] focus:border-transparent text-[var(--color-wa-text-main)] placeholder-[var(--color-wa-text-sec)]"
+                className="w-full px-3 py-2.5 bg-[var(--color-wa-input)] border border-[var(--color-wa-sep)] rounded-lg text-base sm:text-sm focus:outline-none focus:ring-1 focus:ring-[var(--color-wa-green)] focus:border-transparent text-[var(--color-wa-text-main)] placeholder-[var(--color-wa-text-sec)]"
                 placeholder="••••••••"
               />
             </div>
