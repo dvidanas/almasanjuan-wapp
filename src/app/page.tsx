@@ -1,5 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import { ConnectionGate } from "@/components/ConnectionGate";
 import { Sidebar } from "@/components/Sidebar";
 import { ConversationList } from "@/components/ConversationList";
@@ -17,7 +19,11 @@ interface Conversation {
 
 function Dashboard({ connectionStatus }: { connectionStatus: { status: string; phone?: string; quality?: string; message?: string } }) {
   const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [selectedId, setSelectedId] = useState<number | null>(null);
+  const searchParams = useSearchParams();
+  const [selectedId, setSelectedId] = useState<number | null>(() => {
+    const id = searchParams.get("id");
+    return id ? parseInt(id, 10) : null;
+  });
 
   const fetchConversations = useCallback(async () => {
     try {
@@ -54,7 +60,7 @@ function Dashboard({ connectionStatus }: { connectionStatus: { status: string; p
   return (
     <div className="flex h-screen bg-[var(--color-wa-bg-main)]">
       {/* 1. Columna izquierda angosta */}
-      <Sidebar newLeadsCount={conversations.filter(c => c.has_lead === 1 && c.mode === "AI").length} />
+      <Sidebar />
 
       {/* 2. Columna central */}
       <aside className="w-[340px] flex-shrink-0 bg-[var(--color-wa-panel-l)] border-r border-[var(--color-wa-sep)] flex flex-col">
@@ -124,7 +130,11 @@ function Dashboard({ connectionStatus }: { connectionStatus: { status: string; p
 export default function HomePage() {
   return (
     <ConnectionGate>
-      {(status) => <Dashboard connectionStatus={status} />}
+      {(status) => (
+        <Suspense fallback={null}>
+          <Dashboard connectionStatus={status} />
+        </Suspense>
+      )}
     </ConnectionGate>
   );
 }

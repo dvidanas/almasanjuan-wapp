@@ -3,12 +3,32 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
-export function Sidebar({ newLeadsCount = 0 }: { newLeadsCount?: number }) {
+export function Sidebar({ newLeadsCount: propCount }: { newLeadsCount?: number }) {
   const pathname = usePathname();
   const [isDark, setIsDark] = useState(true);
+  const [fetchedCount, setFetchedCount] = useState<number | null>(null);
+
+  const newLeadsCount = fetchedCount ?? propCount ?? 0;
 
   useEffect(() => {
     setIsDark(document.documentElement.classList.contains("dark"));
+  }, []);
+
+  useEffect(() => {
+    async function fetchStats() {
+      try {
+        const res = await fetch("/api/leads/stats");
+        if (res.ok) {
+          const data = await res.json();
+          setFetchedCount(data.nuevo ?? 0);
+        }
+      } catch {
+        // silencioso
+      }
+    }
+    fetchStats();
+    const interval = setInterval(fetchStats, 10000);
+    return () => clearInterval(interval);
   }, []);
 
   const toggleTheme = () => {

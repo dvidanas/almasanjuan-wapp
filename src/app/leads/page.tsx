@@ -31,11 +31,11 @@ const STATUS_LABELS: Record<Lead["status"], string> = {
 };
 
 function timeStr(ts: number): string {
-  return new Date(ts * 1000).toLocaleDateString("es-AR", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
+  const diff = Math.floor(Date.now() / 1000) - ts;
+  if (diff < 60) return "ahora";
+  if (diff < 3600) return `hace ${Math.floor(diff / 60)} min`;
+  if (diff < 86400) return `hace ${Math.floor(diff / 3600)} h`;
+  return `hace ${Math.floor(diff / 86400)} d`;
 }
 
 export default function LeadsPage() {
@@ -48,7 +48,10 @@ export default function LeadsPage() {
   const fetchLeads = useCallback(async () => {
     try {
       const res = await fetch("/api/leads");
-      if (res.ok) setLeads(await res.json());
+      if (res.ok) {
+        const data = await res.json();
+        setLeads(data.leads ?? data);
+      }
     } finally {
       setLoading(false);
     }
@@ -56,7 +59,7 @@ export default function LeadsPage() {
 
   useEffect(() => {
     fetchLeads();
-    const interval = setInterval(fetchLeads, 5000);
+    const interval = setInterval(fetchLeads, 3000);
     return () => clearInterval(interval);
   }, [fetchLeads]);
 
@@ -249,7 +252,7 @@ export default function LeadsPage() {
 
                 <div className="pt-4 border-t border-[var(--color-wa-sep)] flex justify-between items-center">
                   <a
-                    href="/"
+                    href={`/?id=${selectedLead.conversation_id}`}
                     className="text-sm font-medium text-[var(--color-wa-green)] hover:underline"
                   >
                     Ver conversación →
