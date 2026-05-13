@@ -52,4 +52,5 @@ body {
   background-color: var(--bg-main);
   color: var(--text-main);
   transition: background-color 0.2s, color 0.2s;
+  overflow: hidden;
 }

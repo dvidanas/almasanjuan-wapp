@@ -220,7 +220,7 @@ export default function LeadsPage() {
   const newCount = leads.filter((l) => l.status === "nuevo").length;
 
   return (
-    <div className="flex h-[calc(100vh-60px)] md:h-screen bg-[var(--color-wa-bg-main)]">
+    <div className="flex h-[calc(100dvh-60px)] md:h-dvh bg-[var(--color-wa-bg-main)]">
       <Sidebar newLeadsCount={newCount} />
 
       {/* Center column */}

@@ -71,7 +71,7 @@ function Dashboard({ connectionStatus }: { connectionStatus: { status: string; p
   }
 
   return (
-    <div className="flex h-[calc(100vh-60px)] md:h-screen bg-[var(--color-wa-bg-main)]">
+    <div className="flex h-[calc(100dvh-60px)] md:h-dvh bg-[var(--color-wa-bg-main)]">
       {/* 1. Sidebar — hidden on mobile, icon-only on tablet, full on desktop */}
       <Sidebar />
 
