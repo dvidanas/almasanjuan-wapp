@@ -7,13 +7,35 @@ import {
   updateMessageWaId,
   getRecentHistory,
   createLead,
+  updateLead,
   setConversationHasLead,
   getLeadByConversationId,
 } from "@/lib/db";
 import { getChatCompletion, type ChatMessage } from "@/lib/gemini";
 import { sendTextMessage } from "./client";
 
-const PHONE_RE = /(\+?[\d\s\-\(\)]{8,15})/;
+const INTENT_KEYWORDS = [
+  "presupuesto", "precio", "cuánto", "cuanto", "contratar", "contrataría",
+  "quiero", "necesito", "me interesa", "interesado", "interesada",
+  "cotizar", "cotización", "consulta", "información", "info",
+  "servicio", "servicios", "página web", "pagina web", "bot", "sistema",
+  "reunión", "reunion", "hablar", "llamar",
+];
+
+function hasLeadIntent(text: string): boolean {
+  const lower = text.toLowerCase();
+  return INTENT_KEYWORDS.some((kw) => lower.includes(kw));
+}
+
+function looksLikeName(text: string): boolean {
+  const t = text.trim();
+  return (
+    t.length > 0 &&
+    t.length < 40 &&
+    !t.includes("?") &&
+    !hasLeadIntent(t)
+  );
+}
 
 export async function processWebhookPayload(payload: unknown): Promise<void> {
   const p = payload as Record<string, unknown>;
@@ -72,28 +94,33 @@ async function handleIncomingMessage(
   // 6. Guardar mensaje del usuario
   insertMessage(convo.id, "user", text, waId);
 
-  // 7. Detección de teléfono para captura de lead
-  if (!convo.has_lead) {
-    const match = text.match(PHONE_RE);
-    if (match) {
-      const capturedPhone = match[1].replace(/[\s\-\(\)]/g, "");
-      const existingLead = getLeadByConversationId(convo.id);
-      if (!existingLead) {
-        createLead(convo.id, capturedPhone, senderName);
-        setConversationHasLead(convo.id, 1);
-        console.log(`[lead] capturado de +${phone}: ${capturedPhone}`);
-      }
+  // 7. Captura de lead por intención real
+  if (!convo.has_lead && hasLeadIntent(text)) {
+    const existingLead = getLeadByConversationId(convo.id);
+    if (!existingLead) {
+      createLead(convo.id, convo.phone, convo.name);
+      setConversationHasLead(convo.id, 1);
+      console.log(`[lead] capturado por intención de +${phone} (${convo.name ?? "sin nombre"})`);
     }
   }
 
-  // 8. Re-leer modo (puede haber cambiado)
+  // 8. Si ya hay lead y el mensaje parece un nombre, actualizar
+  if (convo.has_lead && looksLikeName(text)) {
+    const lead = getLeadByConversationId(convo.id);
+    if (lead) {
+      updateLead(lead.id, { name: text.trim() });
+      console.log(`[lead] nombre actualizado → ${text.trim()}`);
+    }
+  }
+
+  // 9. Re-leer modo (puede haber cambiado)
   const fresh = getConversationById(convo.id);
   if (!fresh || fresh.mode !== "AI") {
     console.log(`[wh] modo ${fresh?.mode ?? "?"} — sin respuesta automática`);
     return;
   }
 
-  // 9. Construir historial y llamar a Gemini
+  // 10. Construir historial y llamar a Gemini
   const history = getRecentHistory(convo.id, 20);
   const chatHistory: ChatMessage[] = history.map((m) => ({
     role: m.role === "user" ? "user" : "assistant",
@@ -101,18 +128,21 @@ async function handleIncomingMessage(
   }));
 
   const t0 = Date.now();
-  const reply = await getChatCompletion(chatHistory);
+  const rawReply = await getChatCompletion(chatHistory);
   console.log(`[wh] LLM en ${Date.now() - t0}ms`);
 
-  if (!reply) {
+  if (!rawReply) {
     console.warn("[wh] Gemini devolvió respuesta vacía");
     return;
   }
 
-  // 10. Guardar respuesta del asistente
+  // Eliminar saltos de línea para respuesta de párrafo único
+  const reply = rawReply.replace(/\n+/g, " ").trim();
+
+  // 11. Guardar respuesta del asistente
   const messageId = insertMessage(convo.id, "assistant", reply, null);
 
-  // 11. Enviar por WhatsApp y actualizar wa_message_id
+  // 12. Enviar por WhatsApp y actualizar wa_message_id
   try {
     const { wa_message_id } = await sendTextMessage(phone, reply);
     updateMessageWaId(messageId, wa_message_id);
