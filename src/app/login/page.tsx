@@ -99,6 +99,12 @@ function LoginForm() {
             </button>
           </form>
         </div>
+        <p className="text-center mt-6" style={{ fontSize: "10px", color: "var(--color-wa-text-sec)", opacity: 0.4 }}>
+          Desarrollado por{" "}
+          <a href="https://www.feer.com.ar" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }} className="hover:underline">
+            Feer
+          </a>
+        </p>
       </div>
     </div>
   );
