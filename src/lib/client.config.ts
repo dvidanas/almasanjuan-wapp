@@ -111,7 +111,7 @@ export const clientConfig = {
   responseDelayMs: 8000,
 
   appointments: {
-    enabled: false,
+    enabled: true,
     defaultDuration: 30,
     allowCombos: false,
     resources: ["Principal"],
