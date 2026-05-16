@@ -25,7 +25,9 @@ function Dashboard({ connectionStatus }: { connectionStatus: { status: string; p
     const id = searchParams.get("id");
     return id ? parseInt(id, 10) : null;
   });
-  const [mobileView, setMobileView] = useState<"list" | "conversation">("list");
+  const [mobileView, setMobileView] = useState<"list" | "conversation">(() =>
+    searchParams.get("id") ? "conversation" : "list"
+  );
 
   const fetchConversations = useCallback(async () => {
     try {

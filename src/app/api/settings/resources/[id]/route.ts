@@ -26,6 +26,9 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 
 export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  deleteResource(Number(id));
+  const result = deleteResource(Number(id));
+  if (!result.ok) {
+    return NextResponse.json({ error: result.error }, { status: 400 });
+  }
   return NextResponse.json({ ok: true });
 }

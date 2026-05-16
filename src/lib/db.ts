@@ -727,8 +727,24 @@ export function updateResource(id: number, data: { name?: string; active?: numbe
   getDb().prepare(`UPDATE resources SET ${fields} WHERE id = ?`).run(...values, id);
 }
 
-export function deleteResource(id: number): void {
-  getDb().prepare("DELETE FROM resources WHERE id = ?").run(id);
+export function deleteResource(id: number): { ok: boolean; error?: string } {
+  const db = getDb();
+  const activeAppts = (db
+    .prepare<[number], { count: number }>(
+      "SELECT COUNT(*) as count FROM appointments WHERE resource_id = ? AND status != 'cancelled'"
+    )
+    .get(id))!.count;
+  if (activeAppts > 0) {
+    return {
+      ok: false,
+      error: `Este recurso tiene ${activeAppts} turno(s) activo(s). Desactivalo en lugar de eliminarlo.`,
+    };
+  }
+  db.prepare("DELETE FROM availability_slots WHERE resource_id = ?").run(id);
+  db.prepare("DELETE FROM blocked_slots WHERE resource_id = ?").run(id);
+  db.prepare("DELETE FROM appointments WHERE resource_id = ?").run(id);
+  db.prepare("DELETE FROM resources WHERE id = ?").run(id);
+  return { ok: true };
 }
 
 // ── Availability slots CRUD ─────────────────────────────────

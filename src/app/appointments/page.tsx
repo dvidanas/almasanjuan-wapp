@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import { Sidebar } from "@/components/Sidebar";
 import { BottomNav } from "@/components/BottomNav";
 
@@ -577,6 +578,17 @@ function AppointmentCard({
             <p className="text-sm text-[var(--color-wa-text-sec)] italic">{a.notes}</p>
           )}
           <div className="flex gap-2 flex-wrap">
+            {a.conversation_id !== null && (
+              <Link
+                href={`/?id=${a.conversation_id}`}
+                className="text-sm px-3 py-1.5 flex items-center gap-1.5 border border-[var(--color-wa-green)] text-[var(--color-wa-green)] rounded-lg hover:bg-[var(--color-wa-green)] hover:text-white transition-colors font-medium"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+                Ir al chat
+              </Link>
+            )}
             {a.status !== "confirmed" && (
               <button
                 onClick={() => onStatusChange(a.id, "confirmed")}

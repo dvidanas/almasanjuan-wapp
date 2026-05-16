@@ -407,7 +407,13 @@ function TabEmpleados() {
   };
 
   const remove = async (id: number) => {
-    await fetch(`/api/settings/resources/${id}`, { method: "DELETE" });
+    const res = await fetch(`/api/settings/resources/${id}`, { method: "DELETE" });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      alert(data.error ?? "No se pudo eliminar el recurso.");
+      return;
+    }
+    if (expandedId === id) setExpandedId(null);
     load();
   };
 
