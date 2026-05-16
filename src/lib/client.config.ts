@@ -63,6 +63,8 @@ export const clientConfig = {
       Nunca mandar listas ni varios puntos juntos.
       Sin emojis. Directo al punto.
       IMPORTANTE: NUNCA uses saltos de línea. Escribí todo en un único párrafo continuo.
+      REGLA CRÍTICA: cada mensaje tuyo DEBE terminar con UNA sola pregunta.
+      Nunca respondas sin hacer una pregunta al final.
     `,
 
     canDo: `
@@ -70,15 +72,18 @@ export const clientConfig = {
       - Explicar brevemente cómo funciona cada servicio.
       - Contar cómo funciona el programa de referidos.
       - Dar los datos de contacto.
-      - Preguntar al cliente qué tipo de negocio tiene y cuál es
-        su problema principal para entender cómo podemos ayudar.
-      - Cuando el usuario muestre intención real de contratar o pedir
-        presupuesto, hacer máximo 2 preguntas para entender su necesidad.
-        Luego pedir SOLO el nombre para personalizar el seguimiento,
-        usando exactamente una de estas frases: "¿Cuál es tu nombre?"
-        o "¿Cómo te llamás?" — siempre de forma directa.
+      - FLUJO DE PREGUNTAS PROGRESIVO: hacer una pregunta por mensaje para
+        entender al cliente. Orden sugerido:
+        1. ¿Qué tipo de negocio tenés?
+        2. ¿Cuál es el problema principal que querés resolver?
+        3. ¿Hoy cómo manejás ese tema (a mano, con alguna herramienta, etc.)?
+        4. ¿Qué resultado te gustaría lograr con nosotros?
+      - Una vez que respondió varias preguntas y hay contexto suficiente,
+        proponer que alguien del equipo lo contacte para una charla rápida.
+      - Para personalizar el seguimiento, pedir SOLO el nombre con exactamente
+        una de estas frases: "¿Cuál es tu nombre?" o "¿Cómo te llamás?"
         NO pedir teléfono — ya lo tenemos porque nos escribió por WhatsApp.
-        Una vez que deja el nombre, confirmar que el equipo lo va a contactar.
+      - Una vez que deja el nombre, confirmar que el equipo lo va a contactar.
     `,
 
     cannotDo: `
@@ -88,6 +93,8 @@ export const clientConfig = {
       - Mandar párrafos largos.
       - Derivar a la página web como primera respuesta.
       - Hacer múltiples preguntas en un mismo mensaje.
+      - Responder sin terminar con una pregunta (excepto cuando el usuario ya confirmó
+        que quiere ser contactado y el equipo está al tanto).
       - Pedir el número de teléfono — ya lo tenemos porque el usuario nos escribió por WhatsApp.
     `,
 
@@ -102,6 +109,16 @@ export const clientConfig = {
   },
 
   responseDelayMs: 8000,
+
+  appointments: {
+    enabled: false,
+    defaultDuration: 30,
+    allowCombos: false,
+    resources: ["Principal"],
+    confirmationMode: "manual" as "manual" | "auto",
+    workingHours: { start: "09:00", end: "18:00" },
+    workingDays: [1, 2, 3, 4, 5],
+  },
 
   tools: `
     CALIFICACIÓN DE CONSULTAS:

@@ -10,6 +10,7 @@ import {
   updateLead,
   setConversationHasLead,
   getLeadByConversationId,
+  getNextAvailableSlots,
 } from "@/lib/db";
 import { getChatCompletion, type ChatMessage } from "@/lib/gemini";
 import { sendTextMessage } from "./client";
@@ -44,6 +45,14 @@ const pendingResponses = new Map<number, ReturnType<typeof setTimeout>>();
 function hasLeadIntent(text: string): boolean {
   const lower = text.toLowerCase();
   return INTENT_KEYWORDS.some((kw) => lower.includes(kw));
+}
+
+// Mensaje con contenido real: no es un saludo/aceptación de una sola palabra
+function isEngagedMessage(text: string): boolean {
+  const t = text.trim().toLowerCase();
+  if (NOT_A_NAME.includes(t)) return false;
+  const wordCount = t.split(/\s+/).filter(Boolean).length;
+  return wordCount >= 2 || t.length > 20;
 }
 
 function isRealName(name: string | null): boolean {
@@ -82,10 +91,41 @@ async function sendDebouncedReply(convoId: number, phone: string): Promise<void>
     content: m.content,
   }));
 
+  const engagedCount = history.filter(
+    (m) => m.role === "user" && isEngagedMessage(m.content)
+  ).length;
+
+  // Disponibilidad de turnos si está habilitado
+  const apptConfig = (clientConfig as Record<string, unknown>).appointments as
+    | { enabled: boolean; defaultDuration: number }
+    | undefined;
+  let availabilityNote = "";
+  if (apptConfig?.enabled) {
+    const slots = getNextAvailableSlots(3, apptConfig.defaultDuration ?? 30);
+    if (slots.length > 0) {
+      const slotList = slots
+        .slice(0, 6)
+        .map((s) => `${s.date} ${s.time_start}`)
+        .join(", ");
+      availabilityNote =
+        ` DISPONIBILIDAD ACTUAL PARA TURNOS: ${slotList}. ` +
+        "Si el usuario quiere un turno, podés ofrecerle estos horarios.";
+    }
+  }
+
+  const contactInstruction =
+    engagedCount >= 4
+      ? "El usuario ya respondió varias preguntas y hay contexto suficiente. " +
+        "Es el momento de proponer que alguien del equipo lo contacte. " +
+        "Cerrá tu respuesta con algo como '¿Querés que alguien del equipo te contacte para charlar unos minutos?' " +
+        "o '¿Te parece si coordinamos una charla rápida con alguien del equipo?'" +
+        availabilityNote
+      : availabilityNote || undefined;
+
   const t0 = Date.now();
   let rawReply: string;
   try {
-    rawReply = await getChatCompletion(chatHistory);
+    rawReply = await getChatCompletion(chatHistory, contactInstruction);
   } catch (err) {
     console.error(`[wh] error llamando a Gemini para +${phone}:`, err);
     return;

@@ -25,11 +25,16 @@ export async function getRawCompletion(prompt: string): Promise<string> {
 }
 
 export async function getChatCompletion(
-  history: ChatMessage[]
+  history: ChatMessage[],
+  extraInstruction?: string
 ): Promise<string> {
   const model = process.env.GEMINI_MODEL ?? "gemini-2.5-flash";
   const apiKey = process.env.GEMINI_API_KEY!;
   console.log("[llm] usando modelo:", model);
+
+  const systemText = extraInstruction
+    ? `INSTRUCCIONES DEL SISTEMA:\n${SYSTEM_PROMPT}\n\nINSTRUCCIÓN ADICIONAL PARA ESTE MENSAJE:\n${extraInstruction}`
+    : `INSTRUCCIONES DEL SISTEMA:\n${SYSTEM_PROMPT}`;
 
   const start = Date.now();
   const res = await fetch(
@@ -39,7 +44,7 @@ export async function getChatCompletion(
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         contents: [
-          { role: "user", parts: [{ text: "INSTRUCCIONES DEL SISTEMA:\n" + SYSTEM_PROMPT }] },
+          { role: "user", parts: [{ text: systemText }] },
           { role: "model", parts: [{ text: "Entendido." }] },
           ...history.map((m) => ({
             role: m.role === "assistant" ? "model" : "user",

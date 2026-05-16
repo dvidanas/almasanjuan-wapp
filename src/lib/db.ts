@@ -1,6 +1,7 @@
 import Database from "better-sqlite3";
 import path from "node:path";
 import fs from "node:fs";
+import { clientConfig } from "./client.config";
 
 const DB_DIR = path.join(process.cwd(), "data");
 const DB_PATH = path.join(DB_DIR, "messages.db");
@@ -65,6 +66,72 @@ function migrate(db: Database.Database) {
     CREATE INDEX IF NOT EXISTS idx_leads_conv ON leads(conversation_id);
     CREATE INDEX IF NOT EXISTS idx_leads_status ON leads(status);
   `);
+
+  // Tablas de turnos
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS resources (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      active INTEGER NOT NULL DEFAULT 1
+    );
+
+    CREATE TABLE IF NOT EXISTS availability_slots (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      resource_id INTEGER NOT NULL REFERENCES resources(id),
+      day_of_week INTEGER NOT NULL CHECK(day_of_week BETWEEN 0 AND 6),
+      time_start TEXT NOT NULL,
+      time_end TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS appointments (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      resource_id INTEGER NOT NULL REFERENCES resources(id),
+      conversation_id INTEGER REFERENCES conversations(id),
+      service TEXT,
+      date TEXT NOT NULL,
+      time_start TEXT NOT NULL,
+      time_end TEXT NOT NULL,
+      duration_minutes INTEGER NOT NULL DEFAULT 30,
+      status TEXT CHECK(status IN ('pending','confirmed','cancelled')) NOT NULL DEFAULT 'pending',
+      source TEXT CHECK(source IN ('manual','bot')) NOT NULL DEFAULT 'manual',
+      notes TEXT,
+      contact_name TEXT,
+      contact_phone TEXT,
+      created_at INTEGER NOT NULL DEFAULT (unixepoch())
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_appointments_date ON appointments(date);
+    CREATE INDEX IF NOT EXISTS idx_appointments_resource ON appointments(resource_id, date);
+
+    CREATE TABLE IF NOT EXISTS blocked_slots (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      resource_id INTEGER NOT NULL REFERENCES resources(id),
+      date TEXT NOT NULL,
+      time_start TEXT NOT NULL,
+      time_end TEXT NOT NULL,
+      reason TEXT
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_blocked_date ON blocked_slots(resource_id, date);
+  `);
+
+  // Seed recursos desde client.config si la tabla está vacía y appointments está habilitado
+  const apptConfig = (clientConfig as Record<string, unknown>).appointments as AppointmentsConfig | undefined;
+  if (apptConfig?.enabled) {
+    const count = db.prepare<[], { count: number }>("SELECT COUNT(*) as count FROM resources").get()!;
+    if (count.count === 0) {
+      const insertRes = db.prepare("INSERT INTO resources (name) VALUES (?)");
+      const insertSlot = db.prepare(
+        "INSERT INTO availability_slots (resource_id, day_of_week, time_start, time_end) VALUES (?, ?, ?, ?)"
+      );
+      for (const name of apptConfig.resources) {
+        const r = insertRes.run(name);
+        for (const day of apptConfig.workingDays) {
+          insertSlot.run(r.lastInsertRowid, day, apptConfig.workingHours.start, apptConfig.workingHours.end);
+        }
+      }
+    }
+  }
 
   // Migraciones incrementales (idempotentes con try/catch)
   try {
@@ -327,4 +394,231 @@ export function getLeadStats(): Record<string, number> {
     )
     .all();
   return Object.fromEntries(rows.map((r) => [r.status, r.count]));
+}
+
+// ── Appointments ────────────────────────────────────────────
+
+interface AppointmentsConfig {
+  enabled: boolean;
+  defaultDuration: number;
+  resources: string[];
+  workingHours: { start: string; end: string };
+  workingDays: number[];
+}
+
+export interface Resource {
+  id: number;
+  name: string;
+  active: number;
+}
+
+export interface AvailabilitySlot {
+  id: number;
+  resource_id: number;
+  day_of_week: number;
+  time_start: string;
+  time_end: string;
+}
+
+export interface Appointment {
+  id: number;
+  resource_id: number;
+  conversation_id: number | null;
+  service: string | null;
+  date: string;
+  time_start: string;
+  time_end: string;
+  duration_minutes: number;
+  status: "pending" | "confirmed" | "cancelled";
+  source: "manual" | "bot";
+  notes: string | null;
+  contact_name: string | null;
+  contact_phone: string | null;
+  created_at: number;
+}
+
+export interface AppointmentWithResource extends Appointment {
+  resource_name: string;
+}
+
+export interface BlockedSlot {
+  id: number;
+  resource_id: number;
+  date: string;
+  time_start: string;
+  time_end: string;
+  reason: string | null;
+}
+
+export interface AvailableSlot {
+  resource_id: number;
+  resource_name: string;
+  time_start: string;
+  time_end: string;
+}
+
+function timeToMinutes(t: string): number {
+  const [h, m] = t.split(":").map(Number);
+  return h * 60 + m;
+}
+
+function minutesToTime(mins: number): string {
+  return `${String(Math.floor(mins / 60)).padStart(2, "0")}:${String(mins % 60).padStart(2, "0")}`;
+}
+
+function generateSlots(
+  windowStart: string,
+  windowEnd: string,
+  durationMin: number
+): Array<{ time_start: string; time_end: string }> {
+  const start = timeToMinutes(windowStart);
+  const end = timeToMinutes(windowEnd);
+  const slots = [];
+  for (let t = start; t + durationMin <= end; t += durationMin) {
+    slots.push({ time_start: minutesToTime(t), time_end: minutesToTime(t + durationMin) });
+  }
+  return slots;
+}
+
+function overlapsAny(
+  slotStart: string,
+  slotEnd: string,
+  occupied: Array<{ time_start: string; time_end: string }>
+): boolean {
+  const s = timeToMinutes(slotStart);
+  const e = timeToMinutes(slotEnd);
+  return occupied.some((o) => s < timeToMinutes(o.time_end) && e > timeToMinutes(o.time_start));
+}
+
+export function listResources(): Resource[] {
+  return getDb().prepare<[], Resource>("SELECT * FROM resources WHERE active = 1 ORDER BY id").all();
+}
+
+export function getAvailableSlots(date: string, durationMinutes: number): AvailableSlot[] {
+  const db = getDb();
+  // JS Date with noon UTC avoids DST shifts when parsing YYYY-MM-DD
+  const dayOfWeek = new Date(date + "T12:00:00Z").getUTCDay();
+  const resources = db.prepare<[], Resource>("SELECT * FROM resources WHERE active = 1").all();
+  const result: AvailableSlot[] = [];
+
+  for (const resource of resources) {
+    const windows = db
+      .prepare<[number, number], AvailabilitySlot>(
+        "SELECT * FROM availability_slots WHERE resource_id = ? AND day_of_week = ?"
+      )
+      .all(resource.id, dayOfWeek);
+
+    const booked = db
+      .prepare<[number, string], Pick<Appointment, "time_start" | "time_end">>(
+        "SELECT time_start, time_end FROM appointments WHERE resource_id = ? AND date = ? AND status != 'cancelled'"
+      )
+      .all(resource.id, date);
+
+    const blocked = db
+      .prepare<[number, string], Pick<BlockedSlot, "time_start" | "time_end">>(
+        "SELECT time_start, time_end FROM blocked_slots WHERE resource_id = ? AND date = ?"
+      )
+      .all(resource.id, date);
+
+    const occupied = [...booked, ...blocked];
+
+    for (const window of windows) {
+      for (const slot of generateSlots(window.time_start, window.time_end, durationMinutes)) {
+        if (!overlapsAny(slot.time_start, slot.time_end, occupied)) {
+          result.push({ resource_id: resource.id, resource_name: resource.name, ...slot });
+        }
+      }
+    }
+  }
+
+  return result;
+}
+
+export function getNextAvailableSlots(days: number, durationMinutes = 30): Array<AvailableSlot & { date: string }> {
+  const result: Array<AvailableSlot & { date: string }> = [];
+  const now = new Date();
+  for (let i = 0; i < days; i++) {
+    const d = new Date(now);
+    d.setDate(d.getDate() + i);
+    const dateStr = d.toISOString().slice(0, 10);
+    const slots = getAvailableSlots(dateStr, durationMinutes);
+    result.push(...slots.slice(0, 4).map((s) => ({ ...s, date: dateStr })));
+  }
+  return result;
+}
+
+export function listAppointments(from: string, to: string): AppointmentWithResource[] {
+  return getDb()
+    .prepare<[string, string], AppointmentWithResource>(
+      `SELECT a.*, r.name as resource_name
+       FROM appointments a
+       JOIN resources r ON a.resource_id = r.id
+       WHERE a.date >= ? AND a.date <= ?
+       ORDER BY a.date ASC, a.time_start ASC`
+    )
+    .all(from, to);
+}
+
+export function createAppointment(data: {
+  resource_id: number;
+  conversation_id?: number | null;
+  service?: string | null;
+  date: string;
+  time_start: string;
+  duration_minutes: number;
+  source?: "manual" | "bot";
+  notes?: string | null;
+  contact_name?: string | null;
+  contact_phone?: string | null;
+}): number {
+  const endMins = timeToMinutes(data.time_start) + data.duration_minutes;
+  const time_end = minutesToTime(endMins);
+  const res = getDb()
+    .prepare(
+      `INSERT INTO appointments
+        (resource_id, conversation_id, service, date, time_start, time_end, duration_minutes, source, notes, contact_name, contact_phone)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    )
+    .run(
+      data.resource_id,
+      data.conversation_id ?? null,
+      data.service ?? null,
+      data.date,
+      data.time_start,
+      time_end,
+      data.duration_minutes,
+      data.source ?? "manual",
+      data.notes ?? null,
+      data.contact_name ?? null,
+      data.contact_phone ?? null
+    );
+  return res.lastInsertRowid as number;
+}
+
+export function updateAppointmentStatus(
+  id: number,
+  status: Appointment["status"]
+): void {
+  getDb()
+    .prepare("UPDATE appointments SET status = ? WHERE id = ?")
+    .run(status, id);
+}
+
+export function deleteAppointment(id: number): void {
+  getDb().prepare("DELETE FROM appointments WHERE id = ?").run(id);
+}
+
+export function getAppointmentStats(): { pending: number; confirmed: number; cancelled: number } {
+  const today = new Date().toISOString().slice(0, 10);
+  const rows = getDb()
+    .prepare<[string], { status: string; count: number }>(
+      "SELECT status, COUNT(*) as count FROM appointments WHERE date >= ? GROUP BY status"
+    )
+    .all(today);
+  const map = Object.fromEntries(rows.map((r) => [r.status, r.count]));
+  return {
+    pending: map.pending ?? 0,
+    confirmed: map.confirmed ?? 0,
+    cancelled: map.cancelled ?? 0,
+  };
 }
