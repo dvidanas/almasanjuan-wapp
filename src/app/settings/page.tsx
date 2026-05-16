@@ -42,11 +42,14 @@ const DAYS_FULL = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Vierne
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-[var(--color-wa-panel-l)] rounded-xl border border-[var(--color-wa-sep)] overflow-hidden">
-      <div className="px-4 py-3 border-b border-[var(--color-wa-sep)] bg-[var(--color-wa-header)]">
-        <h3 className="text-sm font-semibold text-[var(--color-wa-text-main)]">{title}</h3>
+    <div
+      className="bg-[var(--color-wa-panel-l)] rounded-2xl border border-[var(--color-wa-sep)] overflow-hidden"
+      style={{ boxShadow: "var(--shadow-card)" }}
+    >
+      <div className="px-5 py-3.5 border-b border-[var(--color-wa-sep)]">
+        <h3 className="text-[11px] font-semibold tracking-widest uppercase text-[var(--color-wa-text-sec)]">{title}</h3>
       </div>
-      <div className="p-4">{children}</div>
+      <div className="p-5">{children}</div>
     </div>
   );
 }
@@ -56,7 +59,7 @@ function SaveButton({ loading, onClick }: { loading: boolean; onClick: () => voi
     <button
       onClick={onClick}
       disabled={loading}
-      className="px-4 py-2 bg-[var(--color-wa-green)] text-white text-sm font-semibold rounded-lg hover:opacity-90 disabled:opacity-50 transition-opacity"
+      className="px-5 py-2.5 bg-[var(--color-wa-green)] text-white text-sm font-semibold rounded-xl hover:bg-[var(--color-wa-green-dark)] active:scale-95 disabled:opacity-50 transition-all duration-150 shadow-sm"
     >
       {loading ? "Guardando…" : "Guardar"}
     </button>
@@ -148,7 +151,7 @@ function TabNegocio() {
             <input
               value={info.business_name}
               onChange={(e) => setInfo((p) => ({ ...p, business_name: e.target.value }))}
-              className="w-full bg-[var(--color-wa-bg-main)] border border-[var(--color-wa-sep)] rounded-lg px-3 py-2.5 text-base text-[var(--color-wa-text-main)] outline-none focus:border-[var(--color-wa-green)]"
+              className="w-full bg-[var(--color-wa-bg-main)] border border-[var(--color-wa-sep)] rounded-xl px-3 py-2.5 text-sm text-[var(--color-wa-text-main)] outline-none focus:border-[var(--color-wa-green)] focus:ring-2 focus:ring-[var(--color-wa-green)]/20 transition-colors"
               placeholder="Nombre de tu negocio"
             />
           </div>
@@ -158,7 +161,7 @@ function TabNegocio() {
               value={info.business_description}
               onChange={(e) => setInfo((p) => ({ ...p, business_description: e.target.value }))}
               rows={4}
-              className="w-full bg-[var(--color-wa-bg-main)] border border-[var(--color-wa-sep)] rounded-lg px-3 py-2.5 text-base text-[var(--color-wa-text-main)] outline-none focus:border-[var(--color-wa-green)] resize-none"
+              className="w-full bg-[var(--color-wa-bg-main)] border border-[var(--color-wa-sep)] rounded-xl px-3 py-2.5 text-sm text-[var(--color-wa-text-main)] outline-none focus:border-[var(--color-wa-green)] focus:ring-2 focus:ring-[var(--color-wa-green)]/20 transition-colors resize-none"
               placeholder="Descripción breve del negocio"
             />
           </div>
@@ -248,7 +251,7 @@ function TabServicios() {
               <input
                 value={form.name}
                 onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
-                className="w-full bg-[var(--color-wa-bg-main)] border border-[var(--color-wa-sep)] rounded-lg px-3 py-2.5 text-base text-[var(--color-wa-text-main)] outline-none focus:border-[var(--color-wa-green)]"
+                className="w-full bg-[var(--color-wa-bg-main)] border border-[var(--color-wa-sep)] rounded-xl px-3 py-2.5 text-sm text-[var(--color-wa-text-main)] outline-none focus:border-[var(--color-wa-green)] focus:ring-2 focus:ring-[var(--color-wa-green)]/20 transition-colors"
                 placeholder="Ej: Consulta inicial"
               />
             </div>
@@ -257,7 +260,7 @@ function TabServicios() {
               <input
                 value={form.price}
                 onChange={(e) => setForm((p) => ({ ...p, price: e.target.value }))}
-                className="w-full bg-[var(--color-wa-bg-main)] border border-[var(--color-wa-sep)] rounded-lg px-3 py-2.5 text-base text-[var(--color-wa-text-main)] outline-none focus:border-[var(--color-wa-green)]"
+                className="w-full bg-[var(--color-wa-bg-main)] border border-[var(--color-wa-sep)] rounded-xl px-3 py-2.5 text-sm text-[var(--color-wa-text-main)] outline-none focus:border-[var(--color-wa-green)] focus:ring-2 focus:ring-[var(--color-wa-green)]/20 transition-colors"
                 placeholder="Ej: $5.000 o Consultar"
               />
             </div>
@@ -268,7 +271,7 @@ function TabServicios() {
               <input
                 value={form.description}
                 onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
-                className="w-full bg-[var(--color-wa-bg-main)] border border-[var(--color-wa-sep)] rounded-lg px-3 py-2.5 text-base text-[var(--color-wa-text-main)] outline-none focus:border-[var(--color-wa-green)]"
+                className="w-full bg-[var(--color-wa-bg-main)] border border-[var(--color-wa-sep)] rounded-xl px-3 py-2.5 text-sm text-[var(--color-wa-text-main)] outline-none focus:border-[var(--color-wa-green)] focus:ring-2 focus:ring-[var(--color-wa-green)]/20 transition-colors"
                 placeholder="Descripción breve"
               />
             </div>
@@ -280,7 +283,7 @@ function TabServicios() {
                 step={5}
                 value={form.duration_minutes}
                 onChange={(e) => setForm((p) => ({ ...p, duration_minutes: Number(e.target.value) }))}
-                className="w-full bg-[var(--color-wa-bg-main)] border border-[var(--color-wa-sep)] rounded-lg px-3 py-2.5 text-base text-[var(--color-wa-text-main)] outline-none focus:border-[var(--color-wa-green)]"
+                className="w-full bg-[var(--color-wa-bg-main)] border border-[var(--color-wa-sep)] rounded-xl px-3 py-2.5 text-sm text-[var(--color-wa-text-main)] outline-none focus:border-[var(--color-wa-green)] focus:ring-2 focus:ring-[var(--color-wa-green)]/20 transition-colors"
               />
             </div>
           </div>
@@ -451,7 +454,7 @@ function TabEmpleados() {
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && create()}
-            className="flex-1 bg-[var(--color-wa-bg-main)] border border-[var(--color-wa-sep)] rounded-lg px-3 py-2.5 text-base text-[var(--color-wa-text-main)] outline-none focus:border-[var(--color-wa-green)]"
+            className="flex-1 bg-[var(--color-wa-bg-main)] border border-[var(--color-wa-sep)] rounded-xl px-3 py-2.5 text-sm text-[var(--color-wa-text-main)] outline-none focus:border-[var(--color-wa-green)] focus:ring-2 focus:ring-[var(--color-wa-green)]/20 transition-colors"
             placeholder="Nombre del empleado o recurso"
           />
           <SaveButton loading={saving} onClick={create} />
@@ -524,14 +527,14 @@ function TabEmpleados() {
                                   type="time"
                                   value={slot.time_start}
                                   onChange={(e) => updateTime(r.id, i, "time_start", e.target.value)}
-                                  className="bg-[var(--color-wa-panel-l)] border border-[var(--color-wa-sep)] rounded px-2 py-1 text-sm text-[var(--color-wa-text-main)] outline-none"
+                                  className="bg-[var(--color-wa-panel-l)] border border-[var(--color-wa-sep)] rounded-lg px-2 py-1 text-sm text-[var(--color-wa-text-main)] outline-none focus:border-[var(--color-wa-green)] transition-colors"
                                 />
                                 <span className="text-sm text-[var(--color-wa-text-sec)]">a</span>
                                 <input
                                   type="time"
                                   value={slot.time_end}
                                   onChange={(e) => updateTime(r.id, i, "time_end", e.target.value)}
-                                  className="bg-[var(--color-wa-panel-l)] border border-[var(--color-wa-sep)] rounded px-2 py-1 text-sm text-[var(--color-wa-text-main)] outline-none"
+                                  className="bg-[var(--color-wa-panel-l)] border border-[var(--color-wa-sep)] rounded-lg px-2 py-1 text-sm text-[var(--color-wa-text-main)] outline-none focus:border-[var(--color-wa-green)] transition-colors"
                                 />
                               </>
                             )}
@@ -544,7 +547,7 @@ function TabEmpleados() {
                     </div>
                     <button
                       onClick={() => saveAvailability(r.id)}
-                      className="mt-3 px-4 py-2 bg-[var(--color-wa-green)] text-white text-sm font-semibold rounded-lg hover:opacity-90"
+                      className="mt-3 px-5 py-2.5 bg-[var(--color-wa-green)] text-white text-sm font-semibold rounded-xl hover:bg-[var(--color-wa-green-dark)] active:scale-95 transition-all duration-150 shadow-sm"
                     >
                       Guardar horarios
                     </button>
@@ -609,22 +612,22 @@ export default function SettingsPage() {
 
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <div className="px-4 py-3 bg-[var(--color-wa-header)] border-b border-[var(--color-wa-sep)] flex-shrink-0">
-          <h1 className="text-base font-semibold text-[var(--color-wa-text-main)]">Configuración</h1>
-          <p className="text-sm text-[var(--color-wa-text-sec)]">Personalizá la aplicación</p>
+        <div className="px-5 py-4 bg-[var(--color-wa-header)] border-b border-[var(--color-wa-sep)] flex-shrink-0">
+          <h1 className="text-lg font-bold text-[var(--color-wa-text-main)]">Configuración</h1>
+          <p className="text-sm text-[var(--color-wa-text-sec)] mt-0.5">Personalizá la aplicación y el negocio</p>
         </div>
 
         <div className="flex flex-1 min-h-0">
           {/* Sidebar de tabs — visible en md+ */}
-          <nav className="hidden md:flex flex-col w-48 lg:w-56 border-r border-[var(--color-wa-sep)] bg-[var(--color-wa-panel-l)] py-2 gap-1 px-2 flex-shrink-0">
+          <nav className="hidden md:flex flex-col w-48 lg:w-56 border-r border-[var(--color-wa-sep)] bg-[var(--color-wa-panel-l)] py-3 gap-0.5 px-2 flex-shrink-0">
             {TABS.map((t) => (
               <button
                 key={t.key}
                 onClick={() => setTab(t.key)}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors text-left ${
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 text-left ${
                   tab === t.key
-                    ? "bg-[var(--color-wa-hover)] text-[var(--color-wa-text-main)]"
-                    : "text-[var(--color-wa-text-sec)] hover:bg-[var(--color-wa-hover)]"
+                    ? "bg-[var(--color-wa-green)]/10 text-[var(--color-wa-green)] font-semibold"
+                    : "text-[var(--color-wa-text-sec)] hover:bg-[var(--color-wa-hover)] hover:text-[var(--color-wa-text-main)]"
                 }`}
               >
                 {t.icon}
@@ -640,10 +643,10 @@ export default function SettingsPage() {
                 <button
                   key={t.key}
                   onClick={() => setTab(t.key)}
-                  className={`flex-1 flex flex-col items-center gap-1 px-2 py-2 text-[10px] font-medium whitespace-nowrap transition-colors border-b-2 ${
+                  className={`flex-1 flex flex-col items-center gap-1 px-3 py-2.5 text-[10px] font-semibold whitespace-nowrap transition-all duration-150 border-b-2 ${
                     tab === t.key
                       ? "border-[var(--color-wa-green)] text-[var(--color-wa-green)]"
-                      : "border-transparent text-[var(--color-wa-text-sec)]"
+                      : "border-transparent text-[var(--color-wa-text-sec)] hover:text-[var(--color-wa-text-main)]"
                   }`}
                 >
                   {t.icon}
@@ -653,12 +656,14 @@ export default function SettingsPage() {
             </div>
 
             {/* Contenido */}
-            <div className="flex-1 overflow-y-auto p-4">
+            <div className="flex-1 overflow-y-auto p-4 md:p-6">
               <div className="max-w-2xl mx-auto">
-                {tab === "apariencia" && <TabApariencia />}
-                {tab === "negocio" && <TabNegocio />}
-                {tab === "servicios" && <TabServicios />}
-                {tab === "empleados" && <TabEmpleados />}
+                <div key={tab} className="animate-in flex flex-col gap-4">
+                  {tab === "apariencia" && <TabApariencia />}
+                  {tab === "negocio" && <TabNegocio />}
+                  {tab === "servicios" && <TabServicios />}
+                  {tab === "empleados" && <TabEmpleados />}
+                </div>
               </div>
             </div>
           </div>
