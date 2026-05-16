@@ -556,15 +556,15 @@ function AppointmentCard({
       >
         <div className="flex items-start justify-between gap-1">
           <div className="min-w-0">
-            <p className="text-xs font-semibold text-[var(--color-wa-text-main)] truncate">{name}</p>
-            <p className="text-[10px] text-[var(--color-wa-text-sec)]">
+            <p className="text-sm font-semibold text-[var(--color-wa-text-main)] truncate">{name}</p>
+            <p className="text-xs text-[var(--color-wa-text-sec)]">
               {formatTime(a.time_start)} – {formatTime(a.time_end)}
             </p>
             {a.service && (
-              <p className="text-[10px] text-[var(--color-wa-text-sec)] truncate">{a.service}</p>
+              <p className="text-xs text-[var(--color-wa-text-sec)] truncate">{a.service}</p>
             )}
           </div>
-          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded flex-shrink-0 ${STATUS_STYLES[a.status]}`}>
+          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded flex-shrink-0 ${STATUS_STYLES[a.status]}`}>
             {STATUS_LABELS[a.status]}
           </span>
         </div>
@@ -573,10 +573,10 @@ function AppointmentCard({
       {expanded && (
         <div className="border-t border-[var(--color-wa-sep)] px-2.5 py-2 space-y-2">
           {a.contact_phone && (
-            <p className="text-[11px] text-[var(--color-wa-text-sec)]">Tel: {a.contact_phone}</p>
+            <p className="text-xs text-[var(--color-wa-text-sec)]">Tel: {a.contact_phone}</p>
           )}
           {a.notes && (
-            <p className="text-[11px] text-[var(--color-wa-text-sec)] italic">{a.notes}</p>
+            <p className="text-xs text-[var(--color-wa-text-sec)] italic">{a.notes}</p>
           )}
           <div className="flex gap-1.5 flex-wrap">
             {a.status !== "confirmed" && (
