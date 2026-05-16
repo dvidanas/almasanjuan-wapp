@@ -1,7 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Sidebar } from "@/components/Sidebar";
-import { BottomNav } from "@/components/BottomNav";
+import { TopNav } from "@/components/TopNav";
 
 interface Lead {
   id: number;
@@ -220,8 +219,9 @@ export default function LeadsPage() {
   const newCount = leads.filter((l) => l.status === "nuevo").length;
 
   return (
-    <div className="flex h-[calc(100dvh-60px)] md:h-dvh bg-[var(--color-wa-bg-main)]">
-      <Sidebar />
+    <div className="flex flex-col h-dvh bg-[var(--color-wa-bg-main)]">
+      <TopNav />
+      <div className="flex flex-1 overflow-hidden">
 
       {/* Center column */}
       <aside className={`
@@ -562,7 +562,7 @@ export default function LeadsPage() {
         )}
       </main>
 
-      <BottomNav />
+      </div>
     </div>
   );
 }

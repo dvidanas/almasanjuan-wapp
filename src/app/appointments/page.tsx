@@ -1,8 +1,7 @@
 "use client";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
-import { Sidebar } from "@/components/Sidebar";
-import { BottomNav } from "@/components/BottomNav";
+import { TopNav } from "@/components/TopNav";
 
 interface Appointment {
   id: number;
@@ -609,8 +608,8 @@ export default function AppointmentsPage() {
   };
 
   return (
-    <div className="flex h-[calc(100dvh-60px)] md:h-dvh bg-[var(--color-wa-bg-main)]">
-      <Sidebar />
+    <div className="flex flex-col h-dvh bg-[var(--color-wa-bg-main)]">
+      <TopNav />
 
       <main className="flex-1 flex flex-col overflow-hidden">
         {/* Header */}
@@ -836,7 +835,6 @@ export default function AppointmentsPage() {
         </div>
       )}
 
-      <BottomNav />
     </div>
   );
 }

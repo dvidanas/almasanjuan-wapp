@@ -3,8 +3,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { ConnectionGate } from "@/components/ConnectionGate";
-import { Sidebar } from "@/components/Sidebar";
-import { BottomNav } from "@/components/BottomNav";
+import { TopNav } from "@/components/TopNav";
 import { ConversationList } from "@/components/ConversationList";
 import { ConversationPanel } from "@/components/ConversationPanel";
 
@@ -91,11 +90,11 @@ function Dashboard({ connectionStatus }: { connectionStatus: { status: string; p
   }
 
   return (
-    <div className="flex h-[calc(100dvh-60px)] md:h-dvh bg-[var(--color-wa-bg-main)]">
-      {/* 1. Sidebar — hidden on mobile, icon-only on tablet, full on desktop */}
-      <Sidebar />
+    <div className="flex flex-col h-dvh bg-[var(--color-wa-bg-main)]">
+      <TopNav />
+      <div className="flex flex-1 overflow-hidden">
 
-      {/* 2. List column — full width on mobile, fixed width on md+ */}
+      {/* List column — full width on mobile, fixed width on md+ */}
       <aside className={`
         ${mobileView === "conversation" ? "hidden" : "flex"} md:flex
         w-full md:w-[340px] md:flex-shrink-0
@@ -181,7 +180,7 @@ function Dashboard({ connectionStatus }: { connectionStatus: { status: string; p
         )}
       </main>
 
-      <BottomNav />
+      </div>
     </div>
   );
 }
