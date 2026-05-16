@@ -91,7 +91,6 @@ export default function AppointmentsPage() {
   const [loading, setLoading] = useState(true);
   const [selectedDay, setSelectedDay] = useState<string>(() => dateToStr(new Date()));
 
-  // New appointment modal state
   const [showModal, setShowModal] = useState(false);
   const [modalDate, setModalDate] = useState("");
   const [modalResource, setModalResource] = useState<number>(0);
@@ -135,7 +134,6 @@ export default function AppointmentsPage() {
     return () => clearInterval(interval);
   }, [fetchData]);
 
-  // Fetch available slots when modal date/resource/duration change
   useEffect(() => {
     if (!showModal || !modalDate || !modalResource) return;
     fetch(`/api/appointments/available?date=${modalDate}&duration=${modalDuration}`)
@@ -210,14 +208,14 @@ export default function AppointmentsPage() {
         {/* Header */}
         <div className="bg-[var(--color-wa-header)] border-b border-[var(--color-wa-sep)] px-4 py-3 flex items-center justify-between flex-shrink-0">
           <div>
-            <h1 className="text-sm font-semibold text-[var(--color-wa-text-main)]">Turnos</h1>
-            <p className="text-xs text-[var(--color-wa-text-sec)]">
+            <h1 className="text-base font-semibold text-[var(--color-wa-text-main)]">Turnos</h1>
+            <p className="text-sm text-[var(--color-wa-text-sec)]">
               {stats.pending} pendientes · {stats.confirmed} confirmados
             </p>
           </div>
           <button
             onClick={() => openModal(selectedDay)}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-[var(--color-wa-green)] text-white text-xs font-semibold rounded-lg hover:bg-[var(--color-wa-green-dark)] transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 bg-[var(--color-wa-green)] text-white text-sm font-semibold rounded-lg hover:bg-[var(--color-wa-green-dark)] transition-colors"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
@@ -232,12 +230,12 @@ export default function AppointmentsPage() {
             onClick={() => setWeekStart((w) => addDays(w, -7))}
             className="p-1.5 rounded hover:bg-[var(--color-wa-hover)] transition-colors"
           >
-            <svg className="w-4 h-4 text-[var(--color-wa-text-sec)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg className="w-5 h-5 text-[var(--color-wa-text-sec)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
             </svg>
           </button>
 
-          <span className="text-xs font-medium text-[var(--color-wa-text-main)]">
+          <span className="text-sm font-medium text-[var(--color-wa-text-main)]">
             {formatDate(from)} – {formatDate(to)}
           </span>
 
@@ -245,7 +243,7 @@ export default function AppointmentsPage() {
             onClick={() => setWeekStart((w) => addDays(w, 7))}
             className="p-1.5 rounded hover:bg-[var(--color-wa-hover)] transition-colors"
           >
-            <svg className="w-4 h-4 text-[var(--color-wa-text-sec)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <svg className="w-5 h-5 text-[var(--color-wa-text-sec)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
             </svg>
           </button>
@@ -267,7 +265,7 @@ export default function AppointmentsPage() {
                     isToday ? "bg-[var(--color-wa-green)]" : "bg-[var(--color-wa-panel-l)]"
                   }`}
                 >
-                  <p className={`text-[10px] font-semibold uppercase tracking-wider ${isToday ? "text-white" : "text-[var(--color-wa-text-sec)]"}`}>
+                  <p className={`text-xs font-semibold uppercase tracking-wider ${isToday ? "text-white" : "text-[var(--color-wa-text-sec)]"}`}>
                     {DAY_NAMES[dayIdx]}
                   </p>
                   <p className={`text-lg font-bold leading-tight ${isToday ? "text-white" : "text-[var(--color-wa-text-main)]"}`}>
@@ -280,7 +278,7 @@ export default function AppointmentsPage() {
                   {loading ? (
                     <div className="h-8 rounded bg-[var(--color-wa-sep)] animate-pulse" />
                   ) : dayAppts.length === 0 ? (
-                    <p className="text-center text-[10px] text-[var(--color-wa-text-sec)] pt-4 opacity-50">Sin turnos</p>
+                    <p className="text-center text-xs text-[var(--color-wa-text-sec)] pt-4 opacity-50">Sin turnos</p>
                   ) : (
                     dayAppts.map((a) => (
                       <AppointmentCard
@@ -293,7 +291,7 @@ export default function AppointmentsPage() {
                   )}
                   <button
                     onClick={() => openModal(dayStr)}
-                    className="w-full text-center text-[10px] text-[var(--color-wa-text-sec)] py-1.5 rounded hover:bg-[var(--color-wa-hover)] transition-colors opacity-60 hover:opacity-100"
+                    className="w-full text-center text-xs text-[var(--color-wa-text-sec)] py-2 rounded hover:bg-[var(--color-wa-hover)] transition-colors opacity-60 hover:opacity-100"
                   >
                     + agregar
                   </button>
@@ -305,7 +303,7 @@ export default function AppointmentsPage() {
 
         {/* MOBILE: day tabs + list */}
         <div className="flex md:hidden flex-col flex-1 overflow-hidden">
-          {/* Day scroll tabs */}
+          {/* Day tabs */}
           <div className="flex border-b border-[var(--color-wa-sep)] bg-[var(--color-wa-panel-l)] flex-shrink-0">
             {weekDays.map((dayDate) => {
               const dayStr = dateToStr(dayDate);
@@ -322,8 +320,8 @@ export default function AppointmentsPage() {
                       : "border-transparent text-[var(--color-wa-text-sec)]"
                   }`}
                 >
-                  <span className="text-[10px] uppercase tracking-wider font-semibold">{DAY_NAMES[dayDate.getDay()]}</span>
-                  <span className={`text-base font-bold ${isToday ? "text-[var(--color-wa-green)]" : ""}`}>{dayDate.getDate()}</span>
+                  <span className="text-xs uppercase tracking-wide font-semibold">{DAY_NAMES[dayDate.getDay()]}</span>
+                  <span className={`text-lg font-bold leading-tight ${isToday ? "text-[var(--color-wa-green)]" : ""}`}>{dayDate.getDate()}</span>
                   {count > 0 && (
                     <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-wa-green)] mt-0.5" />
                   )}
@@ -335,12 +333,12 @@ export default function AppointmentsPage() {
           {/* Selected day appointments */}
           <div className="flex-1 overflow-y-auto p-3 space-y-3">
             <div className="flex items-center justify-between">
-              <p className="text-xs font-semibold text-[var(--color-wa-text-sec)] uppercase tracking-wider">
+              <p className="text-sm font-semibold text-[var(--color-wa-text-sec)] uppercase tracking-wider">
                 {DAY_NAMES_FULL[new Date(selectedDay + "T12:00:00Z").getUTCDay()]} {formatDate(selectedDay)}
               </p>
               <button
                 onClick={() => openModal(selectedDay)}
-                className="text-xs text-[var(--color-wa-green)] font-medium"
+                className="text-sm text-[var(--color-wa-green)] font-semibold"
               >
                 + Agregar
               </button>
@@ -354,10 +352,10 @@ export default function AppointmentsPage() {
               </div>
             ) : apptsByDay(selectedDay).length === 0 ? (
               <div className="flex flex-col items-center justify-center py-16 text-center">
-                <svg className="w-10 h-10 text-[var(--color-wa-text-sec)] opacity-20 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg className="w-12 h-12 text-[var(--color-wa-text-sec)] opacity-20 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                 </svg>
-                <p className="text-sm text-[var(--color-wa-text-sec)]">Sin turnos este día</p>
+                <p className="text-base text-[var(--color-wa-text-sec)]">Sin turnos este día</p>
               </div>
             ) : (
               apptsByDay(selectedDay).map((a) => (
@@ -378,7 +376,7 @@ export default function AppointmentsPage() {
         <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/40 backdrop-blur-sm p-4">
           <div className="bg-[var(--color-wa-panel-l)] rounded-2xl w-full max-w-sm shadow-2xl">
             <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--color-wa-sep)]">
-              <h2 className="text-sm font-semibold text-[var(--color-wa-text-main)]">Nuevo turno</h2>
+              <h2 className="text-base font-semibold text-[var(--color-wa-text-main)]">Nuevo turno</h2>
               <button
                 onClick={() => setShowModal(false)}
                 className="text-[var(--color-wa-text-sec)] hover:text-[var(--color-wa-text-main)]"
@@ -392,23 +390,23 @@ export default function AppointmentsPage() {
             <div className="p-5 space-y-4">
               {/* Fecha */}
               <div>
-                <label className="block text-xs font-medium text-[var(--color-wa-text-sec)] mb-1">Fecha</label>
+                <label className="block text-sm font-medium text-[var(--color-wa-text-sec)] mb-1">Fecha</label>
                 <input
                   type="date"
                   value={modalDate}
                   onChange={(e) => setModalDate(e.target.value)}
-                  className="w-full text-sm bg-[var(--color-wa-input)] border border-[var(--color-wa-sep)] rounded-lg px-3 py-2 text-[var(--color-wa-text-main)] focus:outline-none focus:border-[var(--color-wa-green)]"
+                  className="w-full text-base bg-[var(--color-wa-input)] border border-[var(--color-wa-sep)] rounded-lg px-3 py-2.5 text-[var(--color-wa-text-main)] focus:outline-none focus:border-[var(--color-wa-green)]"
                 />
               </div>
 
               {/* Recurso */}
               {resources.length > 1 && (
                 <div>
-                  <label className="block text-xs font-medium text-[var(--color-wa-text-sec)] mb-1">Recurso</label>
+                  <label className="block text-sm font-medium text-[var(--color-wa-text-sec)] mb-1">Recurso</label>
                   <select
                     value={modalResource}
                     onChange={(e) => setModalResource(Number(e.target.value))}
-                    className="w-full text-sm bg-[var(--color-wa-input)] border border-[var(--color-wa-sep)] rounded-lg px-3 py-2 text-[var(--color-wa-text-main)] focus:outline-none focus:border-[var(--color-wa-green)]"
+                    className="w-full text-base bg-[var(--color-wa-input)] border border-[var(--color-wa-sep)] rounded-lg px-3 py-2.5 text-[var(--color-wa-text-main)] focus:outline-none focus:border-[var(--color-wa-green)]"
                   >
                     {resources.map((r) => (
                       <option key={r.id} value={r.id}>{r.name}</option>
@@ -419,11 +417,11 @@ export default function AppointmentsPage() {
 
               {/* Duración */}
               <div>
-                <label className="block text-xs font-medium text-[var(--color-wa-text-sec)] mb-1">Duración</label>
+                <label className="block text-sm font-medium text-[var(--color-wa-text-sec)] mb-1">Duración</label>
                 <select
                   value={modalDuration}
                   onChange={(e) => setModalDuration(Number(e.target.value))}
-                  className="w-full text-sm bg-[var(--color-wa-input)] border border-[var(--color-wa-sep)] rounded-lg px-3 py-2 text-[var(--color-wa-text-main)] focus:outline-none focus:border-[var(--color-wa-green)]"
+                  className="w-full text-base bg-[var(--color-wa-input)] border border-[var(--color-wa-sep)] rounded-lg px-3 py-2.5 text-[var(--color-wa-text-main)] focus:outline-none focus:border-[var(--color-wa-green)]"
                 >
                   {[15, 30, 45, 60, 90, 120].map((d) => (
                     <option key={d} value={d}>{d} min</option>
@@ -433,18 +431,18 @@ export default function AppointmentsPage() {
 
               {/* Horario disponible */}
               <div>
-                <label className="block text-xs font-medium text-[var(--color-wa-text-sec)] mb-1">Horario</label>
+                <label className="block text-sm font-medium text-[var(--color-wa-text-sec)] mb-1">Horario</label>
                 {modalSlots.length === 0 ? (
-                  <p className="text-xs text-[var(--color-wa-text-sec)] italic">
+                  <p className="text-sm text-[var(--color-wa-text-sec)] italic">
                     {modalDate ? "Sin disponibilidad para ese día" : "Seleccioná una fecha"}
                   </p>
                 ) : (
-                  <div className="grid grid-cols-4 gap-1.5">
+                  <div className="grid grid-cols-4 gap-2">
                     {modalSlots.map((s) => (
                       <button
                         key={s.time_start}
                         onClick={() => setModalSlot(s.time_start)}
-                        className={`text-xs py-1.5 rounded-lg border transition-colors ${
+                        className={`text-sm py-2 rounded-lg border transition-colors ${
                           modalSlot === s.time_start
                             ? "bg-[var(--color-wa-green)] text-white border-[var(--color-wa-green)]"
                             : "border-[var(--color-wa-sep)] text-[var(--color-wa-text-main)] hover:border-[var(--color-wa-green)]"
@@ -459,49 +457,49 @@ export default function AppointmentsPage() {
 
               {/* Servicio */}
               <div>
-                <label className="block text-xs font-medium text-[var(--color-wa-text-sec)] mb-1">Servicio (opcional)</label>
+                <label className="block text-sm font-medium text-[var(--color-wa-text-sec)] mb-1">Servicio (opcional)</label>
                 <input
                   type="text"
                   value={modalService}
                   onChange={(e) => setModalService(e.target.value)}
                   placeholder="Ej: Diagnóstico gratuito"
-                  className="w-full text-sm bg-[var(--color-wa-input)] border border-[var(--color-wa-sep)] rounded-lg px-3 py-2 text-[var(--color-wa-text-main)] focus:outline-none focus:border-[var(--color-wa-green)] placeholder:text-[var(--color-wa-text-sec)]"
+                  className="w-full text-base bg-[var(--color-wa-input)] border border-[var(--color-wa-sep)] rounded-lg px-3 py-2.5 text-[var(--color-wa-text-main)] focus:outline-none focus:border-[var(--color-wa-green)] placeholder:text-[var(--color-wa-text-sec)]"
                 />
               </div>
 
               {/* Nombre y teléfono */}
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <label className="block text-xs font-medium text-[var(--color-wa-text-sec)] mb-1">Nombre</label>
+                  <label className="block text-sm font-medium text-[var(--color-wa-text-sec)] mb-1">Nombre</label>
                   <input
                     type="text"
                     value={modalName}
                     onChange={(e) => setModalName(e.target.value)}
                     placeholder="Nombre"
-                    className="w-full text-sm bg-[var(--color-wa-input)] border border-[var(--color-wa-sep)] rounded-lg px-3 py-2 text-[var(--color-wa-text-main)] focus:outline-none focus:border-[var(--color-wa-green)] placeholder:text-[var(--color-wa-text-sec)]"
+                    className="w-full text-base bg-[var(--color-wa-input)] border border-[var(--color-wa-sep)] rounded-lg px-3 py-2.5 text-[var(--color-wa-text-main)] focus:outline-none focus:border-[var(--color-wa-green)] placeholder:text-[var(--color-wa-text-sec)]"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-[var(--color-wa-text-sec)] mb-1">Teléfono</label>
+                  <label className="block text-sm font-medium text-[var(--color-wa-text-sec)] mb-1">Teléfono</label>
                   <input
                     type="tel"
                     value={modalPhone}
                     onChange={(e) => setModalPhone(e.target.value)}
                     placeholder="+54 9..."
-                    className="w-full text-sm bg-[var(--color-wa-input)] border border-[var(--color-wa-sep)] rounded-lg px-3 py-2 text-[var(--color-wa-text-main)] focus:outline-none focus:border-[var(--color-wa-green)] placeholder:text-[var(--color-wa-text-sec)]"
+                    className="w-full text-base bg-[var(--color-wa-input)] border border-[var(--color-wa-sep)] rounded-lg px-3 py-2.5 text-[var(--color-wa-text-main)] focus:outline-none focus:border-[var(--color-wa-green)] placeholder:text-[var(--color-wa-text-sec)]"
                   />
                 </div>
               </div>
 
               {/* Notas */}
               <div>
-                <label className="block text-xs font-medium text-[var(--color-wa-text-sec)] mb-1">Notas (opcional)</label>
+                <label className="block text-sm font-medium text-[var(--color-wa-text-sec)] mb-1">Notas (opcional)</label>
                 <textarea
                   rows={2}
                   value={modalNotes}
                   onChange={(e) => setModalNotes(e.target.value)}
                   placeholder="Notas internas..."
-                  className="w-full text-sm bg-[var(--color-wa-input)] border border-[var(--color-wa-sep)] rounded-lg px-3 py-2 text-[var(--color-wa-text-main)] focus:outline-none focus:border-[var(--color-wa-green)] resize-none placeholder:text-[var(--color-wa-text-sec)]"
+                  className="w-full text-base bg-[var(--color-wa-input)] border border-[var(--color-wa-sep)] rounded-lg px-3 py-2.5 text-[var(--color-wa-text-main)] focus:outline-none focus:border-[var(--color-wa-green)] resize-none placeholder:text-[var(--color-wa-text-sec)]"
                 />
               </div>
             </div>
@@ -509,14 +507,14 @@ export default function AppointmentsPage() {
             <div className="px-5 pb-5 flex gap-2">
               <button
                 onClick={() => setShowModal(false)}
-                className="flex-1 py-2.5 border border-[var(--color-wa-sep)] text-[var(--color-wa-text-main)] text-sm font-medium rounded-xl hover:bg-[var(--color-wa-hover)] transition-colors"
+                className="flex-1 py-3 border border-[var(--color-wa-sep)] text-[var(--color-wa-text-main)] text-base font-medium rounded-xl hover:bg-[var(--color-wa-hover)] transition-colors"
               >
                 Cancelar
               </button>
               <button
                 onClick={saveAppointment}
                 disabled={!modalSlot || savingModal}
-                className="flex-1 py-2.5 bg-[var(--color-wa-green)] text-white text-sm font-semibold rounded-xl hover:bg-[var(--color-wa-green-dark)] disabled:opacity-50 transition-colors"
+                className="flex-1 py-3 bg-[var(--color-wa-green)] text-white text-base font-semibold rounded-xl hover:bg-[var(--color-wa-green-dark)] disabled:opacity-50 transition-colors"
               >
                 {savingModal ? "Guardando…" : "Guardar turno"}
               </button>
@@ -552,37 +550,37 @@ function AppointmentCard({
     >
       <button
         onClick={() => setExpanded((x) => !x)}
-        className="w-full text-left p-2.5 hover:bg-[var(--color-wa-hover)] transition-colors"
+        className="w-full text-left p-3 hover:bg-[var(--color-wa-hover)] transition-colors"
       >
-        <div className="flex items-start justify-between gap-1">
+        <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
-            <p className="text-sm font-semibold text-[var(--color-wa-text-main)] truncate">{name}</p>
-            <p className="text-xs text-[var(--color-wa-text-sec)]">
+            <p className="text-base font-semibold text-[var(--color-wa-text-main)] truncate">{name}</p>
+            <p className="text-sm text-[var(--color-wa-text-sec)]">
               {formatTime(a.time_start)} – {formatTime(a.time_end)}
             </p>
             {a.service && (
-              <p className="text-xs text-[var(--color-wa-text-sec)] truncate">{a.service}</p>
+              <p className="text-sm text-[var(--color-wa-text-sec)] truncate">{a.service}</p>
             )}
           </div>
-          <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded flex-shrink-0 ${STATUS_STYLES[a.status]}`}>
+          <span className={`text-xs font-bold px-2 py-0.5 rounded flex-shrink-0 ${STATUS_STYLES[a.status]}`}>
             {STATUS_LABELS[a.status]}
           </span>
         </div>
       </button>
 
       {expanded && (
-        <div className="border-t border-[var(--color-wa-sep)] px-2.5 py-2 space-y-2">
+        <div className="border-t border-[var(--color-wa-sep)] px-3 py-2.5 space-y-2">
           {a.contact_phone && (
-            <p className="text-xs text-[var(--color-wa-text-sec)]">Tel: {a.contact_phone}</p>
+            <p className="text-sm text-[var(--color-wa-text-sec)]">Tel: {a.contact_phone}</p>
           )}
           {a.notes && (
-            <p className="text-xs text-[var(--color-wa-text-sec)] italic">{a.notes}</p>
+            <p className="text-sm text-[var(--color-wa-text-sec)] italic">{a.notes}</p>
           )}
-          <div className="flex gap-1.5 flex-wrap">
+          <div className="flex gap-2 flex-wrap">
             {a.status !== "confirmed" && (
               <button
                 onClick={() => onStatusChange(a.id, "confirmed")}
-                className="text-[10px] px-2 py-1 bg-[var(--color-wa-green)] text-white rounded-lg font-semibold hover:bg-[var(--color-wa-green-dark)] transition-colors"
+                className="text-sm px-3 py-1.5 bg-[var(--color-wa-green)] text-white rounded-lg font-semibold hover:bg-[var(--color-wa-green-dark)] transition-colors"
               >
                 Confirmar
               </button>
@@ -590,7 +588,7 @@ function AppointmentCard({
             {a.status !== "cancelled" && (
               <button
                 onClick={() => onStatusChange(a.id, "cancelled")}
-                className="text-[10px] px-2 py-1 border border-[var(--color-wa-sep)] text-[var(--color-wa-text-sec)] rounded-lg hover:bg-[var(--color-wa-hover)] transition-colors"
+                className="text-sm px-3 py-1.5 border border-[var(--color-wa-sep)] text-[var(--color-wa-text-sec)] rounded-lg hover:bg-[var(--color-wa-hover)] transition-colors"
               >
                 Cancelar
               </button>
@@ -598,14 +596,14 @@ function AppointmentCard({
             {a.status === "cancelled" && (
               <button
                 onClick={() => onStatusChange(a.id, "pending")}
-                className="text-[10px] px-2 py-1 border border-[var(--color-wa-sep)] text-[var(--color-wa-text-sec)] rounded-lg hover:bg-[var(--color-wa-hover)] transition-colors"
+                className="text-sm px-3 py-1.5 border border-[var(--color-wa-sep)] text-[var(--color-wa-text-sec)] rounded-lg hover:bg-[var(--color-wa-hover)] transition-colors"
               >
                 Reactivar
               </button>
             )}
             <button
               onClick={() => onDelete(a.id)}
-              className="text-[10px] px-2 py-1 text-red-500 hover:underline"
+              className="text-sm px-3 py-1.5 text-red-500 hover:underline"
             >
               Eliminar
             </button>
