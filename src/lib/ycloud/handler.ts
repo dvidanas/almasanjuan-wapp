@@ -339,14 +339,18 @@ async function handleIncomingMessage(
     console.log(`[wh] timer reiniciado para +${phone}`);
   }
 
+  // Primera respuesta del bot: delay corto para no parecer ignorado
+  const hasPriorBotMessage = history.some((m) => m.role === "assistant");
+  const delay = hasPriorBotMessage ? DELAY : Math.min(DELAY, 2000);
+
   pendingResponses.set(
     convo.id,
     setTimeout(() => {
       sendDebouncedReply(convo.id, phone).catch((err) =>
         console.error(`[wh] error en sendDebouncedReply para +${phone}:`, err)
       );
-    }, DELAY)
+    }, delay)
   );
 
-  console.log(`[wh] respuesta programada en ${DELAY}ms para +${phone}`);
+  console.log(`[wh] respuesta programada en ${delay}ms para +${phone}`);
 }
