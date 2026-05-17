@@ -97,7 +97,7 @@ function Dashboard({ connectionStatus }: { connectionStatus: { status: string; p
       {/* List column — full width on mobile, card on md+ */}
       <aside className={`
         ${mobileView === "conversation" ? "hidden" : "flex"} md:flex
-        w-full md:w-[360px] md:flex-shrink-0
+        w-full md:w-[395px] md:flex-shrink-0
         bg-white dark:bg-[var(--color-wa-panel-l)] flex-col
         md:rounded-2xl md:shadow-[0_1px_4px_rgba(0,0,0,0.08)] md:overflow-hidden
       `}>

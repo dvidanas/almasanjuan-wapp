@@ -624,7 +624,7 @@ export default function SettingsPage() {
 
         <div className="flex flex-1 min-h-0 md:px-3 md:pb-3 md:gap-3">
           {/* Sidebar de tabs — visible en md+ */}
-          <nav className="hidden md:flex flex-col w-48 lg:w-56 bg-white dark:bg-[var(--color-wa-panel-l)] rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.08)] py-3 gap-0.5 px-2 flex-shrink-0 overflow-y-auto">
+          <nav className="hidden md:flex flex-col w-[227px] lg:w-[259px] bg-white dark:bg-[var(--color-wa-panel-l)] rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.08)] py-3 gap-0.5 px-2 flex-shrink-0 overflow-y-auto">
             {TABS.map((t) => (
               <button
                 key={t.key}
