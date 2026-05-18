@@ -409,7 +409,7 @@ function TabEmpleados() {
     const res = await fetch(`/api/settings/resources/${id}`, { method: "DELETE" });
     if (!res.ok) {
       const data = await res.json().catch(() => ({}));
-      alert(data.error ?? "No se pudo eliminar el recurso.");
+      alert(data.error ?? "No se pudo eliminar.");
       return;
     }
     if (expandedId === id) setExpandedId(null);
@@ -453,21 +453,21 @@ function TabEmpleados() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Section title="Nuevo empleado / recurso">
+      <Section title="Nuevo personal">
         <div className="flex gap-2">
           <input
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && create()}
             className="flex-1 bg-[var(--color-wa-bg-main)] border border-[var(--color-wa-sep)] rounded-xl px-3 py-2.5 text-sm text-[var(--color-wa-text-main)] outline-none focus:border-[var(--color-wa-green)] focus:ring-2 focus:ring-[var(--color-wa-green)]/20 transition-colors"
-            placeholder="Nombre del empleado o recurso"
+            placeholder="Nombre del empleado"
           />
           <SaveButton loading={saving} onClick={create} />
         </div>
       </Section>
 
       {resources.length > 0 && (
-        <Section title={`Empleados / Recursos (${resources.length})`}>
+        <Section title={`Personal (${resources.length})`}>
           <ul className="flex flex-col gap-2">
             {resources.map((r) => (
               <li key={r.id} className="border border-[var(--color-wa-sep)] rounded-lg overflow-hidden">

@@ -684,7 +684,7 @@ export default function AppointmentsPage() {
 
               {resources.length > 1 && (
                 <div>
-                  <label className="block text-sm font-medium text-[var(--color-wa-text-sec)] mb-1">Recurso</label>
+                  <label className="block text-sm font-medium text-[var(--color-wa-text-sec)] mb-1">Personal</label>
                   <select
                     value={modalResource}
                     onChange={(e) => setModalResource(Number(e.target.value))}

@@ -167,6 +167,21 @@ function migrate(db: Database.Database) {
   try {
     db.exec("ALTER TABLE leads ADD COLUMN summary TEXT");
   } catch { /* ya existe */ }
+
+  // Renombrar recurso "Principal" → "Daniel" y eliminar "Sol"
+  db.prepare("UPDATE resources SET name = 'Daniel' WHERE name = 'Principal'").run();
+  const solRes = db.prepare<[], { id: number; count: number }>(
+    `SELECT r.id, (SELECT COUNT(*) FROM appointments WHERE resource_id = r.id AND status != 'cancelled') as count
+     FROM resources r WHERE r.name = 'Sol'`
+  ).get();
+  if (solRes) {
+    if (solRes.count > 0) {
+      db.prepare("UPDATE resources SET active = 0 WHERE id = ?").run(solRes.id);
+    } else {
+      db.prepare("DELETE FROM availability_slots WHERE resource_id = ?").run(solRes.id);
+      db.prepare("DELETE FROM resources WHERE id = ?").run(solRes.id);
+    }
+  }
 }
 
 // ── Tipos ──────────────────────────────────────────────────

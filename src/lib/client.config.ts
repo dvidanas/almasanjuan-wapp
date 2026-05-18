@@ -114,7 +114,7 @@ export const clientConfig = {
     enabled: true,
     defaultDuration: 30,
     allowCombos: false,
-    resources: ["Principal"],
+    resources: ["Daniel"],
     confirmationMode: "manual" as "manual" | "auto",
     workingHours: { start: "09:00", end: "18:00" },
     workingDays: [1, 2, 3, 4, 5],
