@@ -99,6 +99,8 @@ async function sendDebouncedReply(convoId: number, phone: string): Promise<void>
     (m) => m.role === "user" && isEngagedMessage(m.content)
   ).length;
 
+  const isFirstBotMessage = !history.some((m) => m.role === "assistant");
+
   // Disponibilidad de turnos si está habilitado
   const apptConfig = (clientConfig as Record<string, unknown>).appointments as
     | { enabled: boolean; defaultDuration: number }
@@ -110,13 +112,25 @@ async function sendDebouncedReply(convoId: number, phone: string): Promise<void>
     if (offeredSlots.length > 0) {
       const slotList = offeredSlots
         .slice(0, 6)
-        .map((s) => `${s.date} ${s.time_start}`)
+        .map((s) => {
+          const d = new Date(s.date + "T12:00:00");
+          const dayName = d.toLocaleDateString("es-AR", { weekday: "long" });
+          const [, month, day] = s.date.split("-");
+          return `${dayName} ${day}/${month} a las ${s.time_start}`;
+        })
         .join(", ");
       availabilityNote =
         ` DISPONIBILIDAD ACTUAL PARA TURNOS: ${slotList}. ` +
         "Si el usuario quiere un turno, podés ofrecerle estos horarios.";
     }
   }
+
+  const firstMsgInstruction = isFirstBotMessage
+    ? "Es tu PRIMER mensaje en esta conversación. " +
+      "Saludá, presentá brevemente a Feer en una sola oración (ej: somos una agencia digital que ayuda a negocios a crecer usando tecnología e IA), " +
+      "y preguntá qué tipo de servicio está buscando. " +
+      "Todo en un único mensaje corto y directo, sin listas ni saltos de línea."
+    : undefined;
 
   const contactInstruction =
     engagedCount >= 4
@@ -127,10 +141,12 @@ async function sendDebouncedReply(convoId: number, phone: string): Promise<void>
         availabilityNote
       : availabilityNote || undefined;
 
+  const extraInstruction = [firstMsgInstruction, contactInstruction].filter(Boolean).join(" ") || undefined;
+
   const t0 = Date.now();
   let rawReply: string;
   try {
-    rawReply = await getChatCompletion(chatHistory, contactInstruction);
+    rawReply = await getChatCompletion(chatHistory, extraInstruction);
   } catch (err) {
     console.error(`[wh] error llamando a Gemini para +${phone}:`, err);
     return;
