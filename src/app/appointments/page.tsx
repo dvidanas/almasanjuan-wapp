@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { TopNav, BottomNav } from "@/components/TopNav";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 interface Appointment {
   id: number;
@@ -479,6 +480,7 @@ export default function AppointmentsPage() {
   const [modalNotes, setModalNotes] = useState("");
   const [modalDuration, setModalDuration] = useState(30);
   const [savingModal, setSavingModal] = useState(false);
+  const [deleteId, setDeleteId] = useState<number | null>(null);
 
   const { from, to } = useMemo(() => getMonthBounds(currentMonth), [currentMonth]);
 
@@ -535,7 +537,10 @@ export default function AppointmentsPage() {
     });
   }
 
-  async function handleDelete(id: number) {
+  async function confirmDeleteAppointment() {
+    if (!deleteId) return;
+    const id = deleteId;
+    setDeleteId(null);
     setAppointments((prev) => prev.filter((a) => a.id !== id));
     await fetch(`/api/appointments/${id}/status`, { method: "DELETE" });
   }
@@ -604,7 +609,7 @@ export default function AppointmentsPage() {
     loading,
     onAdd: () => openModal(selectedDay),
     onStatusChange: changeStatus,
-    onDelete: handleDelete,
+    onDelete: setDeleteId,
   };
 
   return (
@@ -633,7 +638,7 @@ export default function AppointmentsPage() {
                 appointments={appointments}
                 loading={loading}
                 onStatusChange={changeStatus}
-                onDelete={handleDelete}
+                onDelete={setDeleteId}
               />
             </div>
           )}
@@ -793,6 +798,14 @@ export default function AppointmentsPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {deleteId !== null && (
+        <ConfirmDialog
+          message="¿Eliminar este turno? Esta acción no se puede deshacer."
+          onConfirm={confirmDeleteAppointment}
+          onCancel={() => setDeleteId(null)}
+        />
       )}
 
       <BottomNav />

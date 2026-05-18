@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { MessageBubble } from "./MessageBubble";
 import { ModeToggle } from "./ModeToggle";
+import { ConfirmDialog } from "./ConfirmDialog";
 
 interface Conversation {
   id: number;
@@ -33,7 +34,7 @@ export function ConversationPanel({ conversation, onModeChange, onDelete, onBack
   const [input, setInput] = useState("");
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState<{ message: string; is24h: boolean } | null>(null);
-  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -54,7 +55,7 @@ export function ConversationPanel({ conversation, onModeChange, onDelete, onBack
     setMode(conversation.mode);
     setInput("");
     setSendError(null);
-    setConfirmDelete(false);
+    setShowDeleteConfirm(false);
     fetchMessages();
   }, [conversation.id, conversation.mode, fetchMessages]);
 
@@ -101,11 +102,8 @@ export function ConversationPanel({ conversation, onModeChange, onDelete, onBack
     onModeChange(conversation.id, newMode);
   }
 
-  async function handleDelete() {
-    if (!confirmDelete) {
-      setConfirmDelete(true);
-      return;
-    }
+  async function confirmDeleteConversation() {
+    setShowDeleteConfirm(false);
     await fetch(`/api/conversations/${conversation.id}`, { method: "DELETE" });
     onDelete(conversation.id);
   }
@@ -143,14 +141,10 @@ export function ConversationPanel({ conversation, onModeChange, onDelete, onBack
             onChange={handleModeChange}
           />
           <button
-            onClick={handleDelete}
-            className={`text-xs px-2.5 py-1.5 rounded-lg transition-colors ${
-              confirmDelete
-                ? "bg-red-600 text-[var(--color-wa-green-text)] hover:bg-red-700"
-                : "text-[var(--color-wa-text-sec)] hover:text-red-500 hover:bg-[var(--color-wa-hover)]"
-            }`}
+            onClick={() => setShowDeleteConfirm(true)}
+            className="text-xs px-2.5 py-1.5 rounded-lg transition-colors text-[var(--color-wa-text-sec)] hover:text-red-500 hover:bg-[var(--color-wa-hover)]"
           >
-            {confirmDelete ? "¿Confirmar?" : "Borrar"}
+            Borrar
           </button>
         </div>
       </div>
@@ -240,6 +234,14 @@ export function ConversationPanel({ conversation, onModeChange, onDelete, onBack
           </div>
         )}
       </div>
+
+      {showDeleteConfirm && (
+        <ConfirmDialog
+          message={`¿Eliminar la conversación con ${conversation.name ?? `+${conversation.phone}`}? Esta acción no se puede deshacer.`}
+          onConfirm={confirmDeleteConversation}
+          onCancel={() => setShowDeleteConfirm(false)}
+        />
+      )}
     </div>
   );
 }
