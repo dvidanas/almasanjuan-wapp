@@ -41,8 +41,8 @@ interface Stats {
 }
 
 const STATUS_STYLES = {
-  pending: "bg-amber-400 text-[var(--color-wa-green-text)]",
-  confirmed: "bg-[var(--color-wa-green)] text-[var(--color-wa-green-text)]",
+  pending: "bg-amber-400 text-[#141d37]",
+  confirmed: "bg-teal-400 text-teal-950",
   cancelled: "bg-[var(--color-wa-sep)] text-[var(--color-wa-text-sec)]",
 };
 const STATUS_LABELS = { pending: "Pendiente", confirmed: "Confirmado", cancelled: "Cancelado" };
@@ -212,7 +212,7 @@ function DayAppointmentCard({
   onDelete: (id: number) => void;
 }) {
   const name = a.contact_name ?? a.contact_phone ?? "Sin nombre";
-  const accentColor = a.status === "pending" ? "#F59E0B" : a.status === "confirmed" ? "var(--wa-green)" : "var(--color-sep)";
+  const accentColor = a.status === "pending" ? "#F59E0B" : a.status === "confirmed" ? "#2DD4BF" : "var(--color-sep)";
 
   return (
     <div
@@ -262,7 +262,7 @@ function DayAppointmentCard({
           {a.status === "pending" && (
             <button
               onClick={() => onStatusChange(a.id, "confirmed")}
-              className="text-xs px-2.5 py-1 bg-[var(--color-wa-green)] text-[var(--color-wa-green-text)] rounded-lg font-semibold hover:bg-[var(--color-wa-green-dark)] transition-colors"
+              className="text-xs px-2.5 py-1 bg-teal-400 text-teal-950 rounded-lg font-semibold hover:bg-teal-500 transition-colors"
             >
               Confirmar
             </button>

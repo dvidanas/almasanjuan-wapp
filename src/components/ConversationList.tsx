@@ -70,7 +70,7 @@ export function ConversationList({ conversations, selectedId, onSelect }: Props)
                   {c.mode === "AI" ? "IA" : "HUMANO"}
                 </span>
                 {c.has_lead === 1 && (
-                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-yellow-500 text-[var(--color-wa-green-text)]">
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-blue-500 text-white">
                     LEAD
                   </span>
                 )}
