@@ -661,7 +661,7 @@ export default function AppointmentsPage() {
           {viewMode === "calendar" ? (
             <>
               {/* Left: mini calendar card */}
-              <div className="w-[291px] flex-shrink-0 overflow-y-auto">
+              <div className="w-[350px] flex-shrink-0 overflow-y-auto">
                 <div className="bg-white dark:bg-[var(--color-wa-panel-l)] rounded-2xl p-5 shadow-[0_1px_4px_rgba(0,0,0,0.08)]">
                   <MiniCalendar {...calendarProps} />
                 </div>

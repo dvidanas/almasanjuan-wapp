@@ -226,7 +226,7 @@ export default function LeadsPage() {
       {/* Center column */}
       <aside className={`
         ${mobileView === "detail" ? "hidden" : "flex"} md:flex
-        w-full md:w-[340px] md:flex-shrink-0
+        w-full md:w-[350px] md:flex-shrink-0
         bg-[var(--color-wa-panel-l)] border-r border-[var(--color-wa-sep)] flex-col
       `}>
         <div className="px-4 py-3 bg-[var(--color-wa-header)] border-b border-[var(--color-wa-sep)]">
