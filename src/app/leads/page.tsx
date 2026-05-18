@@ -37,9 +37,9 @@ interface DetailData {
 }
 
 const STATUS_STYLES: Record<Lead["status"], string> = {
-  nuevo: "bg-blue-500 text-white",
-  seguimiento: "bg-yellow-500 text-white",
-  cerrado: "bg-[var(--color-wa-green)] text-white",
+  nuevo: "bg-blue-500 text-[var(--color-wa-green-text)]",
+  seguimiento: "bg-yellow-500 text-[var(--color-wa-green-text)]",
+  cerrado: "bg-[var(--color-wa-green)] text-[var(--color-wa-green-text)]",
   descartado: "bg-[var(--color-wa-sep)] text-[var(--color-wa-text-main)]",
 };
 
@@ -71,7 +71,7 @@ function tempAvatarBg(temp: string | null | undefined): string {
 }
 
 function tempAvatarText(temp: string | null | undefined): string {
-  return temp ? "text-white" : "text-[var(--color-wa-text-sec)]";
+  return temp ? "text-[var(--color-wa-green-text)]" : "text-[var(--color-wa-text-sec)]";
 }
 
 function tempBadgeStyle(temp: string): string {
@@ -366,7 +366,7 @@ export default function LeadsPage() {
                   <button
                     onClick={generateSummary}
                     disabled={loadingSummary}
-                    className="text-sm px-3 py-1.5 bg-[var(--color-wa-green)] text-white rounded-lg hover:bg-[var(--color-wa-green-dark)] disabled:opacity-50 transition-colors"
+                    className="text-sm px-3 py-1.5 bg-[var(--color-wa-green)] text-[var(--color-wa-green-text)] rounded-lg hover:bg-[var(--color-wa-green-dark)] disabled:opacity-50 transition-colors"
                   >
                     {loadingSummary ? "Generando…" : "Generar resumen"}
                   </button>
@@ -513,7 +513,7 @@ export default function LeadsPage() {
                     <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
                       <div className={`max-w-[82%] px-3 py-2 rounded-xl text-sm leading-relaxed ${
                         m.role === "user"
-                          ? "bg-[var(--color-wa-green)] text-white rounded-br-sm"
+                          ? "bg-[var(--color-wa-green)] text-[var(--color-wa-green-text)] rounded-br-sm"
                           : "bg-[var(--color-wa-bg-main)] text-[var(--color-wa-text-main)] rounded-bl-sm"
                       }`}>
                         {m.content.length > 140 ? m.content.slice(0, 140) + "…" : m.content}
@@ -539,7 +539,7 @@ export default function LeadsPage() {
                   <span className="text-sm text-[var(--color-wa-text-sec)]">¿Confirmar eliminación?</span>
                   <button
                     onClick={() => deleteLead(selectedLead.id)}
-                    className="px-4 py-2 bg-red-500 text-white text-sm font-medium rounded-lg hover:bg-red-600 transition-colors"
+                    className="px-4 py-2 bg-red-500 text-[var(--color-wa-green-text)] text-sm font-medium rounded-lg hover:bg-red-600 transition-colors"
                   >
                     Eliminar
                   </button>

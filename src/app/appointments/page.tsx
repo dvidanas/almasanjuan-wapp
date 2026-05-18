@@ -41,8 +41,8 @@ interface Stats {
 }
 
 const STATUS_STYLES = {
-  pending: "bg-amber-400 text-white",
-  confirmed: "bg-[var(--color-wa-green)] text-white",
+  pending: "bg-amber-400 text-[var(--color-wa-green-text)]",
+  confirmed: "bg-[var(--color-wa-green)] text-[var(--color-wa-green-text)]",
   cancelled: "bg-[var(--color-wa-sep)] text-[var(--color-wa-text-sec)]",
 };
 const STATUS_LABELS = { pending: "Pendiente", confirmed: "Confirmado", cancelled: "Cancelado" };
@@ -158,7 +158,7 @@ function MiniCalendar({
                     compact ? "py-1.5 text-xs" : "py-2 text-sm"
                   } font-medium ${
                     isSelected
-                      ? "bg-blue-500 text-white"
+                      ? "bg-blue-500 text-[var(--color-wa-green-text)]"
                       : isToday
                       ? "ring-2 ring-[var(--color-wa-green)] text-[var(--color-wa-green)] font-bold"
                       : "text-[var(--color-wa-text-main)] hover:bg-[var(--color-wa-hover)]"
@@ -184,7 +184,7 @@ function MiniCalendar({
           </div>
           <div className="flex items-center gap-2 text-xs text-[var(--color-wa-text-sec)]">
             <span className="w-4 h-4 rounded-lg bg-blue-500 flex items-center justify-center">
-              <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+              <svg className="w-2.5 h-2.5 text-[var(--color-wa-green-text)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             </span>
@@ -262,7 +262,7 @@ function DayAppointmentCard({
           {a.status === "pending" && (
             <button
               onClick={() => onStatusChange(a.id, "confirmed")}
-              className="text-xs px-2.5 py-1 bg-[var(--color-wa-green)] text-white rounded-lg font-semibold hover:bg-[var(--color-wa-green-dark)] transition-colors"
+              className="text-xs px-2.5 py-1 bg-[var(--color-wa-green)] text-[var(--color-wa-green-text)] rounded-lg font-semibold hover:bg-[var(--color-wa-green-dark)] transition-colors"
             >
               Confirmar
             </button>
@@ -294,7 +294,7 @@ function DayAppointmentCard({
           {a.conversation_id !== null && (
             <Link
               href={`/?id=${a.conversation_id}`}
-              className="text-xs p-1 rounded border border-[var(--color-wa-green)] text-[var(--color-wa-green)] hover:bg-[var(--color-wa-green)] hover:text-white transition-colors"
+              className="text-xs p-1 rounded border border-[var(--color-wa-green)] text-[var(--color-wa-green)] hover:bg-[var(--color-wa-green)] hover:text-[var(--color-wa-green-text)] transition-colors"
               title="Ir al chat"
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -719,7 +719,7 @@ export default function AppointmentsPage() {
                         onClick={() => setModalSlot(s.time_start)}
                         className={`text-sm py-2 rounded-lg border transition-colors ${
                           modalSlot === s.time_start
-                            ? "bg-[var(--color-wa-green)] text-white border-[var(--color-wa-green)]"
+                            ? "bg-[var(--color-wa-green)] text-[var(--color-wa-green-text)] border-[var(--color-wa-green)]"
                             : "border-[var(--color-wa-sep)] text-[var(--color-wa-text-main)] hover:border-[var(--color-wa-green)]"
                         }`}
                       >
@@ -786,7 +786,7 @@ export default function AppointmentsPage() {
               <button
                 onClick={saveAppointment}
                 disabled={!modalSlot || savingModal}
-                className="flex-1 py-3 bg-[var(--color-wa-green)] text-white text-sm font-semibold rounded-xl hover:bg-[var(--color-wa-green-dark)] disabled:opacity-50 transition-colors"
+                className="flex-1 py-3 bg-[var(--color-wa-green)] text-[var(--color-wa-green-text)] text-sm font-semibold rounded-xl hover:bg-[var(--color-wa-green-dark)] disabled:opacity-50 transition-colors"
               >
                 {savingModal ? "Guardando…" : "Guardar turno"}
               </button>

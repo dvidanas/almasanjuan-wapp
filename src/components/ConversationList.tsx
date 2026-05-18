@@ -63,14 +63,14 @@ export function ConversationList({ conversations, selectedId, onSelect }: Props)
                 <span
                   className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold ${
                     c.mode === "AI"
-                      ? "bg-[var(--color-wa-green)] text-white"
-                      : "bg-amber-500 text-white"
+                      ? "bg-[var(--color-wa-green)] text-[var(--color-wa-green-text)]"
+                      : "bg-amber-500 text-[var(--color-wa-green-text)]"
                   }`}
                 >
                   {c.mode === "AI" ? "IA" : "HUMANO"}
                 </span>
                 {c.has_lead === 1 && (
-                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-yellow-500 text-white">
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-yellow-500 text-[var(--color-wa-green-text)]">
                     LEAD
                   </span>
                 )}

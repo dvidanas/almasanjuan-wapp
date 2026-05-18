@@ -31,7 +31,7 @@ export function Sidebar() {
     <aside className="hidden md:flex md:w-16 lg:w-64 bg-[var(--color-wa-panel-l)] border-r border-[var(--color-wa-sep)] flex-col flex-shrink-0 transition-all duration-200">
       {/* Header */}
       <div className="h-16 flex items-center justify-center lg:justify-start px-4 border-b border-[var(--color-wa-sep)] flex-shrink-0">
-        <div className="w-10 h-10 rounded-full bg-[var(--color-wa-green)] flex items-center justify-center text-white font-bold flex-shrink-0 text-base">
+        <div className="w-10 h-10 rounded-full bg-[var(--color-wa-green)] flex items-center justify-center text-[var(--color-wa-green-text)] font-bold flex-shrink-0 text-base">
           {initials}
         </div>
         <div className="ml-3 hidden lg:flex flex-col min-w-0">

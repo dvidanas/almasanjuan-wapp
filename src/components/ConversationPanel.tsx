@@ -149,7 +149,7 @@ export function ConversationPanel({ conversation, onModeChange, onDelete, onBack
             onClick={handleDelete}
             className={`text-xs px-2.5 py-1.5 rounded-lg transition-colors ${
               confirmDelete
-                ? "bg-red-600 text-white hover:bg-red-700"
+                ? "bg-red-600 text-[var(--color-wa-green-text)] hover:bg-red-700"
                 : "text-[var(--color-wa-text-sec)] hover:text-red-500 hover:bg-[var(--color-wa-hover)]"
             }`}
           >
@@ -230,7 +230,7 @@ export function ConversationPanel({ conversation, onModeChange, onDelete, onBack
             <button
               onClick={handleSend}
               disabled={sending || !input.trim()}
-              className="w-11 h-11 flex-shrink-0 rounded-full bg-[var(--color-wa-green)] hover:bg-[var(--color-wa-green-dark)] flex items-center justify-center disabled:opacity-50 transition-colors shadow-sm text-white"
+              className="w-11 h-11 flex-shrink-0 rounded-full bg-[var(--color-wa-green)] hover:bg-[var(--color-wa-green-dark)] flex items-center justify-center disabled:opacity-50 transition-colors shadow-sm text-[var(--color-wa-green-text)]"
             >
               {sending ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />

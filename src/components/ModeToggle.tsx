@@ -22,8 +22,8 @@ export function ModeToggle({ conversationId, mode, onChange }: Props) {
       onClick={toggle}
       className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
         mode === "AI"
-          ? "bg-[var(--color-wa-green)] text-white hover:bg-[var(--color-wa-green-dark)]"
-          : "bg-amber-500 text-white hover:bg-amber-600"
+          ? "bg-[var(--color-wa-green)] text-[var(--color-wa-green-text)] hover:bg-[var(--color-wa-green-dark)]"
+          : "bg-amber-500 text-[var(--color-wa-green-text)] hover:bg-amber-600"
       }`}
     >
       <span

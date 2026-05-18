@@ -38,7 +38,7 @@ function LoginForm() {
           {/* Header */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-[var(--color-wa-green)] mb-4">
-              <span className="text-white font-bold text-xl">F</span>
+              <span className="text-[var(--color-wa-green-text)] font-bold text-xl">F</span>
             </div>
             <h1 className="text-xl font-semibold text-[var(--color-wa-text-main)]">
               {clientConfig.businessName}
@@ -93,7 +93,7 @@ function LoginForm() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full mt-2 py-3 px-4 bg-[var(--color-wa-green)] hover:bg-[var(--color-wa-green-dark)] disabled:opacity-60 text-white text-sm font-medium rounded-lg transition-colors shadow-sm"
+              className="w-full mt-2 py-3 px-4 bg-[var(--color-wa-green)] hover:bg-[var(--color-wa-green-dark)] disabled:opacity-60 text-[var(--color-wa-green-text)] text-sm font-medium rounded-lg transition-colors shadow-sm"
             >
               {loading ? "Ingresando..." : "Ingresar"}
             </button>

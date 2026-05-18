@@ -48,7 +48,7 @@ export function TopNav() {
     <header className="h-14 flex-shrink-0 flex items-stretch bg-[var(--color-wa-header)] border-b border-[var(--color-wa-sep)] z-40">
       {/* Left: avatar + name */}
       <div className="flex items-center gap-2.5 px-4 flex-shrink-0">
-        <div className="w-8 h-8 rounded-full bg-[var(--color-wa-green)] flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+        <div className="w-8 h-8 rounded-full bg-[var(--color-wa-green)] flex items-center justify-center text-[var(--color-wa-green-text)] font-bold text-sm flex-shrink-0">
           {initials}
         </div>
         <div className="hidden sm:flex flex-col leading-none">

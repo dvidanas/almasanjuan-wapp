@@ -132,7 +132,7 @@ function Dashboard({ connectionStatus }: { connectionStatus: { status: string; p
               onClick={() => setChatFilter(f.key)}
               className={`px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
                 chatFilter === f.key
-                  ? "bg-[var(--color-wa-green)] text-white"
+                  ? "bg-[var(--color-wa-green)] text-[var(--color-wa-green-text)]"
                   : "bg-[var(--color-wa-bg-main)] text-[var(--color-wa-text-sec)] hover:bg-[var(--color-wa-hover)]"
               }`}
             >

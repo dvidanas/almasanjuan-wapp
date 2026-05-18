@@ -58,7 +58,7 @@ function SaveButton({ loading, onClick }: { loading: boolean; onClick: () => voi
     <button
       onClick={onClick}
       disabled={loading}
-      className="px-5 py-2.5 bg-[var(--color-wa-green)] text-white text-sm font-semibold rounded-xl hover:bg-[var(--color-wa-green-dark)] active:scale-95 disabled:opacity-50 transition-all duration-150 shadow-sm"
+      className="px-5 py-2.5 bg-[var(--color-wa-green)] text-[var(--color-wa-green-text)] text-sm font-semibold rounded-xl hover:bg-[var(--color-wa-green-dark)] active:scale-95 disabled:opacity-50 transition-all duration-150 shadow-sm"
     >
       {loading ? "Guardando…" : "Guardar"}
     </button>
@@ -522,7 +522,7 @@ function TabEmpleados() {
                           <div key={i} className="flex items-center gap-3">
                             <button
                               onClick={() => toggleDay(r.id, i)}
-                              className={`w-10 text-xs font-semibold py-1 rounded ${active ? "bg-[var(--color-wa-green)] text-white" : "bg-[var(--color-wa-sep)] text-[var(--color-wa-text-sec)]"}`}
+                              className={`w-10 text-xs font-semibold py-1 rounded ${active ? "bg-[var(--color-wa-green)] text-[var(--color-wa-green-text)]" : "bg-[var(--color-wa-sep)] text-[var(--color-wa-text-sec)]"}`}
                             >
                               {d}
                             </button>
@@ -552,7 +552,7 @@ function TabEmpleados() {
                     </div>
                     <button
                       onClick={() => saveAvailability(r.id)}
-                      className="mt-3 px-5 py-2.5 bg-[var(--color-wa-green)] text-white text-sm font-semibold rounded-xl hover:bg-[var(--color-wa-green-dark)] active:scale-95 transition-all duration-150 shadow-sm"
+                      className="mt-3 px-5 py-2.5 bg-[var(--color-wa-green)] text-[var(--color-wa-green-text)] text-sm font-semibold rounded-xl hover:bg-[var(--color-wa-green-dark)] active:scale-95 transition-all duration-150 shadow-sm"
                     >
                       Guardar horarios
                     </button>
