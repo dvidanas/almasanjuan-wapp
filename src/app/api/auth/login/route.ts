@@ -9,6 +9,11 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const { pin } = body as { pin?: string };
 
+    console.log("[login] PIN recibido:", JSON.stringify(pin));
+    console.log("[login] PIN esperado:", JSON.stringify(clientConfig.dashboard.pinLogin));
+    console.log("[login] Coinciden:", pin === clientConfig.dashboard.pinLogin);
+    console.log("[login] AUTH_SECRET presente:", !!process.env.AUTH_SECRET);
+
     if (!pin || pin !== clientConfig.dashboard.pinLogin) {
       return NextResponse.json({ error: "PIN incorrecto" }, { status: 401 });
     }
