@@ -31,8 +31,8 @@ function PinKey({ label, onClick }: { label: string; onClick: () => void }) {
       onPointerUp={() => { setPressed(false); onClick(); }}
       onPointerLeave={() => setPressed(false)}
       style={{
-        width: 72,
-        height: 72,
+        width: 64,
+        height: 64,
         borderRadius: "50%",
         fontSize: 24,
         fontWeight: 600,
@@ -105,14 +105,14 @@ function LoginForm() {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center px-4"
+      className="min-h-screen flex items-center justify-center px-4 overflow-y-auto"
       style={{
         background: "var(--color-wa-bg-main)",
         opacity: fadeOut ? 0 : 1,
         transition: "opacity 0.35s",
       }}
     >
-      <div className="flex flex-col items-center gap-8" style={{ maxWidth: 340, width: "100%" }}>
+      <div className="flex flex-col items-center gap-6 py-8 w-full" style={{ maxWidth: 320 }}>
         {/* Header */}
         <div className="text-center" style={{ marginBottom: 4 }}>
           <div
@@ -156,7 +156,7 @@ function LoginForm() {
           {keys.map((row, ri) => (
             <div key={ri} style={{ display: "flex", gap: 12, justifyContent: "center" }}>
               {row.map((key, ki) => {
-                if (key === "") return <div key={ki} style={{ width: 72, height: 72 }} />;
+                if (key === "") return <div key={ki} style={{ width: 64, height: 64 }} />;
                 if (key === "del")
                   return (
                     <button
@@ -164,8 +164,8 @@ function LoginForm() {
                       type="button"
                       onClick={pressDelete}
                       style={{
-                        width: 72,
-                        height: 72,
+                        width: 64,
+                        height: 64,
                         borderRadius: "50%",
                         fontSize: 18,
                         color: "var(--color-wa-text-sec)",
