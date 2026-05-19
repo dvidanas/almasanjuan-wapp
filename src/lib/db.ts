@@ -116,18 +116,22 @@ function migrate(db: Database.Database) {
   `);
 
   // Seed recursos desde client.config si la tabla está vacía y appointments está habilitado
-  const apptConfig = (clientConfig as Record<string, unknown>).appointments as AppointmentsConfig | undefined;
-  if (apptConfig?.enabled) {
+  const apptEnabled = clientConfig.appointments?.enabled;
+  if (apptEnabled) {
     const count = db.prepare<[], { count: number }>("SELECT COUNT(*) as count FROM resources").get()!;
     if (count.count === 0) {
       const insertRes = db.prepare("INSERT INTO resources (name) VALUES (?)");
       const insertSlot = db.prepare(
         "INSERT INTO availability_slots (resource_id, day_of_week, time_start, time_end) VALUES (?, ?, ?, ?)"
       );
-      for (const name of apptConfig.resources) {
+      const wh = clientConfig.workingHours;
+      for (const name of clientConfig.appointments.resources) {
         const r = insertRes.run(name);
-        for (const day of apptConfig.workingDays) {
-          insertSlot.run(r.lastInsertRowid, day, apptConfig.workingHours.start, apptConfig.workingHours.end);
+        for (const day of wh.weekdays.days) {
+          insertSlot.run(r.lastInsertRowid, day, wh.weekdays.open, wh.weekdays.close);
+        }
+        for (const day of wh.saturday.days) {
+          insertSlot.run(r.lastInsertRowid, day, wh.saturday.open, wh.saturday.close);
         }
       }
     }
@@ -156,7 +160,7 @@ function migrate(db: Database.Database) {
   if (settingsCount.count === 0) {
     const ins = db.prepare("INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)");
     ins.run("business_name", clientConfig.businessName);
-    ins.run("business_description", clientConfig.businessDescription.trim());
+    ins.run("business_description", clientConfig.dashboard.subtitle);
   }
 
   // Migraciones incrementales (idempotentes con try/catch)
@@ -168,20 +172,6 @@ function migrate(db: Database.Database) {
     db.exec("ALTER TABLE leads ADD COLUMN summary TEXT");
   } catch { /* ya existe */ }
 
-  // Renombrar recurso "Principal" → "Daniel" y eliminar "Sol"
-  db.prepare("UPDATE resources SET name = 'Daniel' WHERE name = 'Principal'").run();
-  const solRes = db.prepare<[], { id: number; count: number }>(
-    `SELECT r.id, (SELECT COUNT(*) FROM appointments WHERE resource_id = r.id AND status != 'cancelled') as count
-     FROM resources r WHERE r.name = 'Sol'`
-  ).get();
-  if (solRes) {
-    if (solRes.count > 0) {
-      db.prepare("UPDATE resources SET active = 0 WHERE id = ?").run(solRes.id);
-    } else {
-      db.prepare("DELETE FROM availability_slots WHERE resource_id = ?").run(solRes.id);
-      db.prepare("DELETE FROM resources WHERE id = ?").run(solRes.id);
-    }
-  }
 }
 
 // ── Tipos ──────────────────────────────────────────────────
@@ -438,14 +428,6 @@ export function getLeadStats(): Record<string, number> {
 }
 
 // ── Appointments ────────────────────────────────────────────
-
-interface AppointmentsConfig {
-  enabled: boolean;
-  defaultDuration: number;
-  resources: string[];
-  workingHours: { start: string; end: string };
-  workingDays: number[];
-}
 
 export interface Resource {
   id: number;

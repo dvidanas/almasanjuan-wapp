@@ -20,7 +20,7 @@ import { getChatCompletion, getRawCompletion, type ChatMessage } from "@/lib/gem
 import { sendTextMessage } from "./client";
 import { clientConfig } from "@/lib/client.config";
 
-const DELAY = clientConfig.responseDelayMs ?? 8000;
+const DELAY = 8000;
 
 const INTENT_KEYWORDS = [
   "presupuesto", "precio", "cuánto", "cuanto", "contratar", "contrataría",
@@ -101,14 +101,13 @@ async function sendDebouncedReply(convoId: number, phone: string): Promise<void>
 
   const isFirstBotMessage = !history.some((m) => m.role === "assistant");
 
-  // Disponibilidad de turnos si está habilitado
-  const apptConfig = (clientConfig as Record<string, unknown>).appointments as
-    | { enabled: boolean; defaultDuration: number }
-    | undefined;
+  // Disponibilidad de turnos — solo si botBooking está habilitado
+  const apptCfg = clientConfig.appointments;
+  const botBookingEnabled = apptCfg?.enabled && !apptCfg.manualOnly && (apptCfg as unknown as Record<string, unknown>).botBooking !== false;
   let availabilityNote = "";
   let offeredSlots: Array<AvailableSlot & { date: string }> = [];
-  if (apptConfig?.enabled) {
-    offeredSlots = getNextAvailableSlots(3, apptConfig.defaultDuration ?? 30);
+  if (botBookingEnabled) {
+    offeredSlots = getNextAvailableSlots(3, apptCfg.defaultDuration ?? 30);
     if (offeredSlots.length > 0) {
       const slotList = offeredSlots
         .slice(0, 6)
@@ -125,23 +124,7 @@ async function sendDebouncedReply(convoId: number, phone: string): Promise<void>
     }
   }
 
-  const firstMsgInstruction = isFirstBotMessage
-    ? "Es tu PRIMER mensaje en esta conversación. " +
-      "Saludá, presentá brevemente a Feer en una sola oración (ej: somos una agencia digital que ayuda a negocios a crecer usando tecnología e IA), " +
-      "y preguntá qué tipo de servicio está buscando. " +
-      "Todo en un único mensaje corto y directo, sin listas ni saltos de línea."
-    : undefined;
-
-  const contactInstruction =
-    engagedCount >= 4
-      ? "El usuario ya respondió varias preguntas y hay contexto suficiente. " +
-        "Es el momento de proponer que alguien del equipo lo contacte. " +
-        "Cerrá tu respuesta con algo como '¿Querés que alguien del equipo te contacte para charlar unos minutos?' " +
-        "o '¿Te parece si coordinamos una charla rápida con alguien del equipo?'" +
-        availabilityNote
-      : availabilityNote || undefined;
-
-  const extraInstruction = [firstMsgInstruction, contactInstruction].filter(Boolean).join(" ") || undefined;
+  const extraInstruction = availabilityNote || undefined;
 
   const t0 = Date.now();
   let rawReply: string;
@@ -170,9 +153,9 @@ async function sendDebouncedReply(convoId: number, phone: string): Promise<void>
     console.error(`[wh] error al enviar a +${phone}:`, err);
   }
 
-  // Intentar detectar si el usuario confirmó un turno
-  if (apptConfig?.enabled && offeredSlots.length > 0) {
-    tryBookAppointmentFromChat(convoId, phone, history, offeredSlots, apptConfig.defaultDuration ?? 30).catch(
+  // Intentar detectar si el usuario confirmó un turno (solo si botBooking habilitado)
+  if (botBookingEnabled && offeredSlots.length > 0) {
+    tryBookAppointmentFromChat(convoId, phone, history, offeredSlots, apptCfg.defaultDuration ?? 30).catch(
       (err) => console.error("[appt] error en tryBookAppointmentFromChat:", err)
     );
   }
