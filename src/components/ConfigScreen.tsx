@@ -1,5 +1,6 @@
 interface Props {
   missing: string[];
+  onContinue?: () => void;
 }
 
 const ENV_DESCRIPTIONS: Record<string, string> = {
@@ -8,7 +9,7 @@ const ENV_DESCRIPTIONS: Record<string, string> = {
   GEMINI_API_KEY: "API Key de Google Gemini (AI Studio)",
 };
 
-export function ConfigScreen({ missing }: Props) {
+export function ConfigScreen({ missing, onContinue }: Props) {
   const allRequired = ["YCLOUD_API_KEY", "YCLOUD_PHONE_NUMBER", "GEMINI_API_KEY"];
 
   return (
@@ -120,6 +121,23 @@ export function ConfigScreen({ missing }: Props) {
               </ol>
             </div>
           </div>
+
+          {/* Botón para continuar sin bloquear */}
+          {onContinue && (
+            <div className="px-6 pb-6">
+              <div className="border-t border-gray-100 pt-5 flex flex-col items-center gap-2">
+                <p className="text-xs text-gray-400 text-center">
+                  Podés usar el dashboard sin WhatsApp conectado. Los mensajes no se enviarán hasta completar la configuración.
+                </p>
+                <button
+                  onClick={onContinue}
+                  className="mt-1 px-5 py-2 rounded-lg text-sm font-medium bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors"
+                >
+                  Continuar al dashboard →
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

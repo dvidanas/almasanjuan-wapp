@@ -33,7 +33,7 @@ export function ConnectionGate({ children }: Props) {
   }
 
   if (status.status === "missing_config") {
-    return <ConfigScreen missing={status.missing ?? []} />;
+    return <ConfigScreen missing={status.missing ?? []} onContinue={() => setStatus({ status: "disconnected" })} />;
   }
 
   return <>{children(status)}</>;
