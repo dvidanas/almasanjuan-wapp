@@ -672,6 +672,27 @@ export function getAppointmentStats(): { pending: number; confirmed: number; can
   };
 }
 
+// ── Métricas globales ───────────────────────────────────────
+
+export interface Metrics {
+  totalLeads: number;
+  totalAppointments: number;
+  aiMessages: number;
+  humanInterventions: number;
+}
+
+export function getMetrics(): Metrics {
+  const db = getDb();
+  const count = (sql: string) =>
+    db.prepare<[], { count: number }>(sql).get()!.count;
+  return {
+    totalLeads: count("SELECT COUNT(*) as count FROM leads"),
+    totalAppointments: count("SELECT COUNT(*) as count FROM appointments"),
+    aiMessages: count("SELECT COUNT(*) as count FROM messages WHERE role = 'assistant'"),
+    humanInterventions: count("SELECT COUNT(*) as count FROM conversations WHERE mode = 'HUMAN'"),
+  };
+}
+
 // ── Settings ────────────────────────────────────────────────
 
 export function getSetting(key: string): string | null {
