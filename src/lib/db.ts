@@ -172,6 +172,22 @@ function migrate(db: Database.Database) {
     db.exec("ALTER TABLE leads ADD COLUMN summary TEXT");
   } catch { /* ya existe */ }
 
+  // Limpieza única de datos de ejemplo del repo original
+  const cleaned = db.prepare<[string], { value: string }>(
+    "SELECT value FROM settings WHERE key = ?"
+  ).get("_sample_data_cleaned");
+  if (!cleaned) {
+    db.transaction(() => {
+      db.exec("DELETE FROM leads");
+      db.exec("DELETE FROM messages");
+      db.exec("DELETE FROM appointments");
+      db.exec("DELETE FROM conversations");
+      db.exec("DELETE FROM processed_webhook_messages");
+      db.prepare("INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)")
+        .run("_sample_data_cleaned", "1");
+    })();
+  }
+
 }
 
 // ── Tipos ──────────────────────────────────────────────────
