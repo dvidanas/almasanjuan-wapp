@@ -4,13 +4,14 @@ import {
   createAppointment,
   getAppointmentStats,
   listResources,
+  todayAR,
 } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
-  const from = searchParams.get("from") ?? new Date().toISOString().slice(0, 10);
+  const from = searchParams.get("from") ?? todayAR();
   const to = searchParams.get("to") ?? from;
 
   const appointments = listAppointments(from, to);

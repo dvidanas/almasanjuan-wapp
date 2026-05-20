@@ -6,6 +6,12 @@ import { clientConfig } from "./client.config";
 const DB_DIR = path.join(process.cwd(), "data");
 const DB_PATH = path.join(DB_DIR, "messages.db");
 
+const TZ = "America/Argentina/San_Juan";
+
+export function todayAR(): string {
+  return new Date().toLocaleDateString("sv-SE", { timeZone: TZ });
+}
+
 let _db: Database.Database | null = null;
 
 function getDb(): Database.Database {
@@ -575,9 +581,9 @@ export function getAvailableSlots(date: string, durationMinutes: number): Availa
 
 export function getNextAvailableSlots(days: number, durationMinutes = 30): Array<AvailableSlot & { date: string }> {
   const result: Array<AvailableSlot & { date: string }> = [];
-  const now = new Date();
+  const today = todayAR();
   for (let i = 0; i < days; i++) {
-    const d = new Date(now);
+    const d = new Date(today + "T12:00:00");
     d.setDate(d.getDate() + i);
     const dateStr = d.toISOString().slice(0, 10);
     const slots = getAvailableSlots(dateStr, durationMinutes);
@@ -658,12 +664,11 @@ export function hasAppointmentForSlot(conversationId: number, date: string, time
 }
 
 export function getAppointmentStats(): { pending: number; confirmed: number; cancelled: number } {
-  const today = new Date().toISOString().slice(0, 10);
   const rows = getDb()
     .prepare<[string], { status: string; count: number }>(
       "SELECT status, COUNT(*) as count FROM appointments WHERE date >= ? GROUP BY status"
     )
-    .all(today);
+    .all(todayAR());
   const map = Object.fromEntries(rows.map((r) => [r.status, r.count]));
   return {
     pending: map.pending ?? 0,
