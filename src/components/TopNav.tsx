@@ -23,7 +23,24 @@ const TABS = [
       </svg>
     ),
   },
-
+  {
+    href: "/services",
+    label: "Servicios",
+    icon: (
+      <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+      </svg>
+    ),
+  },
+  {
+    href: "/staff",
+    label: "Personal",
+    icon: (
+      <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+      </svg>
+    ),
+  },
   {
     href: "/metrics",
     label: "Métricas",
@@ -33,7 +50,6 @@ const TABS = [
       </svg>
     ),
   },
-
 ];
 
 export function TopNav() {
@@ -57,7 +73,7 @@ export function TopNav() {
   };
 
   return (
-    <header className="h-14 flex-shrink-0 flex items-stretch bg-[var(--color-wa-header)] border-b border-[var(--color-wa-sep)] z-40">
+    <header className="h-14 flex-shrink-0 flex items-stretch justify-between bg-[var(--color-wa-header)] border-b border-[var(--color-wa-sep)] z-40">
       {/* Left: name */}
       <div className="flex items-center px-4 flex-shrink-0">
         <div className="flex flex-col leading-none">
@@ -66,8 +82,8 @@ export function TopNav() {
         </div>
       </div>
 
-      {/* Center: tabs — desktop only */}
-      <nav className="flex-1 hidden md:flex items-center justify-center">
+      {/* Center: tabs */}
+      <nav className="hidden md:flex flex-1 items-center justify-center overflow-x-auto">
         <div className="inline-flex items-center bg-[#f1f3f4] dark:bg-[var(--color-wa-hover)] rounded-xl p-1 gap-0.5">
           {TABS.map((tab) => {
             const isActive = pathname === tab.href;
@@ -76,7 +92,7 @@ export function TopNav() {
                 key={tab.href}
                 href={tab.href}
                 title={tab.label}
-                className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 ${
+                className={`flex items-center gap-1.5 px-2.5 md:px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 ${
                   isActive
                     ? "bg-[var(--color-wa-panel-l)] text-[var(--color-wa-text-main)] shadow-[0_1px_3px_rgba(0,0,0,0.12)]"
                     : "text-[var(--color-wa-text-sec)] hover:text-[var(--color-wa-text-main)]"

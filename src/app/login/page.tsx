@@ -1,205 +1,192 @@
 "use client";
-import { useState, useEffect, Suspense } from "react";
+import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { clientConfig } from "@/lib/client.config";
 
+const KEYS = ["1","2","3","4","5","6","7","8","9","←","0","✓"];
 const PIN_LENGTH = 4;
-
-function PinBubble({ filled, shake }: { filled: boolean; shake: boolean }) {
-  return (
-    <div
-      className={`transition-all duration-200 ${shake ? "animate-[shake_0.4s_ease-in-out]" : ""}`}
-      style={{
-        width: 48,
-        height: 48,
-        borderRadius: "50%",
-        border: `2.5px solid ${filled ? "var(--color-wa-green)" : "var(--color-wa-sep)"}`,
-        background: filled ? "var(--color-wa-green)" : "transparent",
-        transition: "background 0.15s, border-color 0.15s, transform 0.15s",
-        transform: filled ? "scale(1.08)" : "scale(1)",
-      }}
-    />
-  );
-}
-
-function PinKey({ label, onClick }: { label: string; onClick: () => void }) {
-  const [pressed, setPressed] = useState(false);
-  return (
-    <button
-      type="button"
-      onPointerDown={() => setPressed(true)}
-      onPointerUp={() => { setPressed(false); onClick(); }}
-      onPointerLeave={() => setPressed(false)}
-      style={{
-        width: 64,
-        height: 64,
-        borderRadius: "50%",
-        fontSize: 24,
-        fontWeight: 600,
-        color: "var(--color-wa-text-main)",
-        background: pressed ? "var(--color-wa-sep)" : "var(--color-wa-input)",
-        border: "1.5px solid var(--color-wa-sep)",
-        cursor: "pointer",
-        userSelect: "none",
-        transition: "background 0.1s",
-        touchAction: "manipulation",
-      }}
-    >
-      {label}
-    </button>
-  );
-}
 
 function LoginForm() {
   const router = useRouter();
   const params = useSearchParams();
   const [pin, setPin] = useState("");
-  const [shake, setShake] = useState(false);
-  const [fadeOut, setFadeOut] = useState(false);
-  const [checking, setChecking] = useState(false);
+  const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  async function validatePin(value: string) {
-    if (checking) return;
-    setChecking(true);
+  async function submit(value: string) {
+    setLoading(true);
+    setError(false);
     const res = await fetch("/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ pin: value }),
     });
     if (res.ok) {
-      setFadeOut(true);
-      setTimeout(() => router.push(params.get("from") ?? "/"), 350);
+      router.push(params.get("from") ?? "/");
     } else {
-      setShake(true);
+      setError(true);
+      setLoading(false);
       setTimeout(() => {
-        setShake(false);
         setPin("");
-        setChecking(false);
-      }, 450);
+        setError(false);
+      }, 600);
     }
   }
 
-  useEffect(() => {
-    if (pin.length === PIN_LENGTH) {
-      validatePin(pin);
+  function handleKey(key: string) {
+    if (loading) return;
+    if (key === "←") {
+      setPin((p) => p.slice(0, -1));
+      setError(false);
+      return;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pin]);
-
-  function pressKey(digit: string) {
-    if (pin.length < PIN_LENGTH && !checking) {
-      setPin((p) => p + digit);
+    if (key === "✓") {
+      if (pin.length === PIN_LENGTH) submit(pin);
+      return;
     }
+    if (pin.length >= PIN_LENGTH) return;
+    const next = pin + key;
+    setPin(next);
+    if (next.length === PIN_LENGTH) submit(next);
   }
 
-  function pressDelete() {
-    if (!checking) setPin((p) => p.slice(0, -1));
-  }
-
-  const keys = [
-    ["1", "2", "3"],
-    ["4", "5", "6"],
-    ["7", "8", "9"],
-    ["del", "0", ""],
-  ];
+  const canSubmit = pin.length === PIN_LENGTH && !loading;
 
   return (
-    <div
-      className="min-h-screen flex items-center justify-center px-4 overflow-y-auto"
-      style={{
-        background: "var(--color-wa-bg-main)",
-        opacity: fadeOut ? 0 : 1,
-        transition: "opacity 0.35s",
-      }}
-    >
-      <div className="flex flex-col items-center gap-6 py-8 w-full" style={{ maxWidth: 320 }}>
-        {/* Header */}
-        <div className="text-center" style={{ marginBottom: 4 }}>
-          <div
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: 56,
-              height: 56,
-              borderRadius: "50%",
-              background: "var(--color-wa-green)",
-              marginBottom: 14,
-            }}
-          >
-            <span style={{ color: "var(--color-wa-green-text)", fontWeight: 700, fontSize: 22 }}>A</span>
-          </div>
-          <h1
-            style={{
-              fontSize: 20,
-              fontWeight: 600,
-              color: "var(--color-wa-text-main)",
-              margin: 0,
-            }}
-          >
-            {clientConfig.dashboard.title}
-          </h1>
-          <p style={{ fontSize: 13, color: "var(--color-wa-text-sec)", marginTop: 4 }}>
-            Ingresá tu PIN
-          </p>
-        </div>
+    <div style={{
+      minHeight: "100dvh",
+      background: "radial-gradient(circle at 50% 0%, #ffffff 0%, #f0f0f3 100%)",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: "3rem",
+      padding: "1.5rem",
+      fontFamily: "system-ui, -apple-system, sans-serif",
+      color: "#1a1a1a",
+      position: "relative"
+    }}>
 
-        {/* Burbujas */}
-        <div style={{ display: "flex", gap: 16 }}>
-          {Array.from({ length: PIN_LENGTH }).map((_, i) => (
-            <PinBubble key={i} filled={i < pin.length} shake={shake} />
-          ))}
-        </div>
-
-        {/* Teclado numérico */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-          {keys.map((row, ri) => (
-            <div key={ri} style={{ display: "flex", gap: 12, justifyContent: "center" }}>
-              {row.map((key, ki) => {
-                if (key === "") return <div key={ki} style={{ width: 64, height: 64 }} />;
-                if (key === "del")
-                  return (
-                    <button
-                      key={ki}
-                      type="button"
-                      onClick={pressDelete}
-                      style={{
-                        width: 64,
-                        height: 64,
-                        borderRadius: "50%",
-                        fontSize: 18,
-                        color: "var(--color-wa-text-sec)",
-                        background: "transparent",
-                        border: "none",
-                        cursor: "pointer",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        touchAction: "manipulation",
-                      }}
-                    >
-                      ⌫
-                    </button>
-                  );
-                return <PinKey key={ki} label={key} onClick={() => pressKey(key)} />;
-              })}
-            </div>
-          ))}
-        </div>
-
-        {/* Footer */}
-        <p style={{ fontSize: 10, color: "var(--color-wa-text-sec)", opacity: 0.4, marginTop: 8 }}>
-          {clientConfig.dashboard.footerText}
+      {/* Brand */}
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "1.5rem" }}>
+        <p style={{
+          color: "rgba(0,0,0,0.5)",
+          fontSize: "0.75rem",
+          letterSpacing: "0.25em",
+          textTransform: "uppercase",
+          margin: 0,
+        }}>
+          Ingresá tu código
         </p>
       </div>
 
+      {/* PIN bubbles (Elasticized) */}
+      <div style={{ display: "flex", gap: "0.75rem", alignItems: "center", height: "3rem" }}>
+        {Array.from({ length: PIN_LENGTH }).map((_, i) => {
+          const isActive = pin.length > i;
+          return (
+            <div
+              key={i}
+              style={{
+                width: isActive ? "3rem" : "1.25rem",
+                height: "1.25rem",
+                borderRadius: "1rem",
+                border: `1.5px solid ${error ? "#ef4444" : isActive ? "#222" : "rgba(0,0,0,0.15)"}`,
+                background: error ? "#ef4444" : isActive ? "#222" : "transparent",
+                transition: "all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                boxShadow: isActive && !error ? "0 4px 10px rgba(0,0,0,0.15)" : "none",
+              }}
+            />
+          );
+        })}
+      </div>
+
+      {/* Keypad */}
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(3, 1fr)",
+        gap: "0.75rem",
+        width: "16rem",
+      }}>
+        {KEYS.map((key) => {
+          const isConfirm = key === "✓";
+          const isBack = key === "←";
+          const isNumber = !isConfirm && !isBack;
+
+          return (
+            <button
+              key={key}
+              onClick={() => handleKey(key)}
+              disabled={loading || (isConfirm && !canSubmit)}
+              style={{
+                height: "4rem",
+                borderRadius: "1.25rem",
+                fontSize: isNumber ? "1.5rem" : "1.25rem",
+                fontWeight: isNumber ? 500 : 400,
+                cursor: loading ? "default" : "pointer",
+                transition: "all 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+                border: "1px solid rgba(0,0,0,0.06)",
+                background: isConfirm
+                  ? canSubmit ? "#222" : "rgba(0,0,0,0.04)"
+                  : "rgba(0,0,0,0.03)",
+                color: isConfirm
+                  ? canSubmit ? "#fff" : "rgba(0,0,0,0.2)"
+                  : "rgba(0,0,0,0.7)",
+                outline: "none",
+                WebkitTapHighlightColor: "transparent",
+                boxShadow: isNumber ? "0 2px 5px rgba(0,0,0,0.02)" : "none",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center"
+              }}
+            >
+              {key === "✓" && loading ? (
+                <span style={{
+                  display: "inline-block",
+                  width: "1.25rem",
+                  height: "1.25rem",
+                  border: "2px solid rgba(0,0,0,0.1)",
+                  borderTop: "2px solid #fff",
+                  borderRadius: "50%",
+                  animation: "spin 0.8s linear infinite",
+                }} />
+              ) : key}
+            </button>
+          );
+        })}
+      </div>
+
+      {error && (
+        <p style={{
+          color: "#ef4444",
+          fontSize: "0.85rem",
+          letterSpacing: "0.05em",
+          position: "absolute",
+          bottom: "5rem",
+          animation: "shake 0.4s ease-in-out"
+        }}>
+          PIN incorrecto
+        </p>
+      )}
+
+      <p style={{ fontSize: "11px", color: "rgba(0,0,0,0.3)", position: "absolute", bottom: "1.5rem", letterSpacing: "0.05em" }}>
+        DESARROLLADO POR{" "}
+        <a href="https://www.feer.com.ar" target="_blank" rel="noopener noreferrer"
+          style={{ color: "#222", textDecoration: "none", fontWeight: 600 }}>
+          FEER
+        </a>
+      </p>
+
       <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
         @keyframes shake {
-          0%,100% { transform: translateX(0); }
-          20% { transform: translateX(-8px); }
-          40% { transform: translateX(8px); }
-          60% { transform: translateX(-6px); }
-          80% { transform: translateX(6px); }
+          0%, 100% { transform: translateX(0); }
+          25% { transform: translateX(-5px); }
+          50% { transform: translateX(5px); }
+          75% { transform: translateX(-5px); }
+        }
+        button:not(:disabled):active {
+          transform: scale(0.95);
+          background: rgba(0,0,0,0.08) !important;
         }
       `}</style>
     </div>
@@ -208,7 +195,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen" style={{ background: "var(--color-wa-bg-main)" }} />}>
+    <Suspense fallback={<div style={{ minHeight: "100dvh", background: "#f0f0f3" }} />}>
       <LoginForm />
     </Suspense>
   );

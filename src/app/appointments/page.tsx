@@ -1,8 +1,9 @@
-"use client";
+﻿"use client";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { TopNav, BottomNav } from "@/components/TopNav";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { PullToRefresh } from "@/components/PullToRefresh";
 
 interface Appointment {
   id: number;
@@ -93,6 +94,7 @@ function MiniCalendar({
   onNextMonth: () => void;
   compact?: boolean;
 }) {
+  const [isExpanded, setIsExpanded] = useState(false);
   const today = dateToStr(new Date());
   const y = currentMonth.getFullYear();
   const m = currentMonth.getMonth();
@@ -106,6 +108,18 @@ function MiniCalendar({
 
   const weeks: (string | null)[][] = [];
   for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
+
+  // Find active week index (week containing selectedDay)
+  let activeWeekIndex = weeks.findIndex((week) => week.includes(selectedDay));
+  if (activeWeekIndex === -1) {
+    const todayStr = dateToStr(new Date());
+    activeWeekIndex = weeks.findIndex((week) => week.includes(todayStr));
+  }
+  if (activeWeekIndex === -1) {
+    activeWeekIndex = 0;
+  }
+
+  const visibleWeeks = compact && !isExpanded ? [weeks[activeWeekIndex]] : weeks;
 
   return (
     <div className="flex flex-col gap-2">
@@ -143,8 +157,8 @@ function MiniCalendar({
 
       {/* Weeks */}
       <div className="flex flex-col gap-1">
-        {weeks.map((week, wi) => (
-          <div key={wi} className="grid grid-cols-7 gap-0.5">
+        {visibleWeeks.map((week, wi) => (
+          <div key={week.find(Boolean) ?? wi} className="grid grid-cols-7 gap-0.5">
             {week.map((dayStr, di) => {
               if (!dayStr) return <div key={di} />;
               const isToday = dayStr === today;
@@ -155,13 +169,13 @@ function MiniCalendar({
                 <button
                   key={di}
                   onClick={() => onSelectDay(dayStr)}
-                  className={`relative flex flex-col items-center justify-center w-full rounded-lg transition-all ${
-                    compact ? "py-1.5 text-xs" : "py-2 text-sm"
+                  className={`relative flex flex-col items-center justify-center w-8 h-8 mx-auto rounded-full transition-all ${
+                    compact ? "text-xs" : "text-sm"
                   } font-medium ${
                     isSelected
-                      ? "bg-blue-500 text-[var(--color-wa-green-text)]"
+                      ? "bg-[#6ea8fe] text-white shadow-sm"
                       : isToday
-                      ? "ring-2 ring-[var(--color-wa-green)] text-[var(--color-wa-green)] font-bold"
+                      ? "border-[1.5px] border-[var(--color-wa-green)] text-[var(--color-wa-green)] font-bold"
                       : "text-[var(--color-wa-text-main)] hover:bg-[var(--color-wa-hover)]"
                   }`}
                 >
@@ -184,17 +198,38 @@ function MiniCalendar({
             Tiene turnos
           </div>
           <div className="flex items-center gap-2 text-xs text-[var(--color-wa-text-sec)]">
-            <span className="w-4 h-4 rounded-lg bg-blue-500 flex items-center justify-center">
-              <svg className="w-2.5 h-2.5 text-[var(--color-wa-green-text)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+            <span className="w-4 h-4 rounded-full bg-[#6ea8fe] flex items-center justify-center">
+              <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             </span>
             Seleccionado
           </div>
           <div className="flex items-center gap-2 text-xs text-[var(--color-wa-text-sec)]">
-            <span className="w-4 h-4 rounded-lg ring-2 ring-[var(--color-wa-green)] flex items-center justify-center text-[var(--color-wa-green)] text-[10px] font-bold">h</span>
+            <span className="w-4 h-4 rounded-full border-[1.5px] border-[var(--color-wa-green)] flex items-center justify-center"></span>
             Hoy
           </div>
+        </div>
+      )}
+
+      {/* Bottom toggle button (only in compact/mobile mode) */}
+      {compact && (
+        <div className="flex justify-center pt-2 mt-1 border-t border-[var(--color-wa-sep)]/60">
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="flex items-center gap-1 text-xs font-semibold text-[var(--color-wa-green)] hover:text-[var(--color-wa-green-dark)] transition-colors py-0.5 px-3 rounded-full bg-[var(--color-wa-hover)] cursor-pointer"
+          >
+            <span>{isExpanded ? "Ver menos" : "Ver mes completo"}</span>
+            <svg
+              className={`w-3.5 h-3.5 transition-transform duration-200 ${isExpanded ? "rotate-180" : ""}`}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2.5}
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+            </svg>
+          </button>
         </div>
       )}
     </div>
@@ -207,112 +242,247 @@ function DayAppointmentCard({
   appointment: a,
   onStatusChange,
   onDelete,
+  onEdit,
 }: {
   appointment: Appointment;
   onStatusChange: (id: number, status: Appointment["status"]) => void;
   onDelete: (id: number) => void;
+  onEdit: (appointment: Appointment) => void;
 }) {
   const name = a.contact_name ?? a.contact_phone ?? "Sin nombre";
-  const accentColor = a.status === "pending" ? "#F59E0B" : a.status === "confirmed" ? "#2DD4BF" : "var(--color-sep)";
+  const accentColor = a.status === "pending" ? "#F59E0B" : a.status === "confirmed" ? "#2DD4BF" : "var(--color-wa-sep)";
+
+  // Compute initials for the avatar
+  const initials = name
+    .split(" ")
+    .filter(Boolean)
+    .map((n) => n[0])
+    .join("")
+    .substring(0, 2)
+    .toUpperCase() || "?";
 
   return (
     <div
-      className={`flex gap-3 p-3 rounded-xl border border-[var(--color-wa-sep)] bg-[var(--color-wa-panel-l)] animate-in shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)] transition-all duration-150 ${
-        a.status === "cancelled" ? "opacity-40" : ""
+      className={`relative flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 md:p-5 rounded-2xl border border-[var(--color-wa-sep)] bg-[var(--color-wa-panel-l)] animate-in shadow-[var(--shadow-card)] hover:shadow-[var(--shadow-card-hover)] transition-all duration-200 overflow-hidden ${
+        a.status === "cancelled" ? "opacity-60 bg-slate-50/50" : ""
       }`}
-      style={{ borderLeft: `3px solid ${accentColor}` }}
     >
-      {/* Time */}
-      <div className="flex-shrink-0 w-16 text-right">
-        <p className="text-sm font-semibold text-[var(--color-wa-text-main)]">{formatTime(a.time_start)}</p>
-        <p className="text-xs text-[var(--color-wa-text-sec)]">{formatTime(a.time_end)}</p>
-      </div>
+      {/* Left indicator bar */}
+      <div 
+        className="absolute left-0 top-0 bottom-0 w-1.5 rounded-r-md" 
+        style={{ backgroundColor: accentColor }}
+      />
 
-      {/* Divider */}
-      <div className="w-px bg-[var(--color-wa-sep)] flex-shrink-0" />
-
-      {/* Content */}
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-[var(--color-wa-text-main)] truncate">{name}</p>
-        {a.service && (
-          <p className="text-xs text-[var(--color-wa-text-sec)] truncate">{a.service}</p>
-        )}
-        {a.contact_phone && a.contact_name && (
-          <p className="text-xs text-[var(--color-wa-text-sec)]">{a.contact_phone}</p>
-        )}
-        {a.notes && (
-          <p className="text-xs text-[var(--color-wa-text-sec)] italic mt-0.5 truncate">{a.notes}</p>
-        )}
-
-        {/* Badges */}
-        <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-          <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${STATUS_STYLES[a.status]}`}>
-            {STATUS_LABELS[a.status]}
-          </span>
-          <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${
-            a.source === "bot"
-              ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-              : "bg-[var(--color-wa-hover)] text-[var(--color-wa-text-sec)]"
-          }`}>
-            {a.source === "bot" ? "Bot" : "Manual"}
-          </span>
+      {/* LEFT SECTION: Time (desktop only), Avatar, and Client/Service details */}
+      <div className="flex items-center gap-3.5 min-w-0 pl-1.5 md:pl-2.5">
+        {/* Time (Desktop only) */}
+        <div className="hidden md:flex flex-col text-right pr-4 border-r border-[var(--color-wa-sep)] min-w-[75px] flex-shrink-0">
+          <span className="text-base font-bold text-[var(--color-wa-text-main)]">{formatTime(a.time_start)}</span>
+          <span className="text-xs text-[var(--color-wa-text-sec)]">{formatTime(a.time_end)}</span>
         </div>
 
-        {/* Actions */}
-        <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+        {/* Initials Avatar */}
+        <div 
+          className="flex-shrink-0 w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold text-white shadow-inner select-none"
+          style={{ 
+            background: a.status === "cancelled" 
+              ? "var(--color-wa-sep)" 
+              : a.status === "pending" 
+                ? "linear-gradient(135deg, #FBBF24, #F59E0B)" 
+                : "linear-gradient(135deg, #2DD4BF, #0D9488)"
+          }}
+        >
+          {initials}
+        </div>
+
+        {/* Details */}
+        <div className="min-w-0">
+          {/* Mobile Time (Mobile only) */}
+          <div className="flex md:hidden items-center gap-2 mb-1.5">
+            <div className="flex items-center gap-1 bg-slate-50 dark:bg-slate-900/30 border border-slate-100 dark:border-slate-800 py-0.5 px-2 rounded-full">
+              <span className="text-[11px] font-bold text-[var(--color-wa-text-main)]">
+                {formatTime(a.time_start)} - {formatTime(a.time_end)}
+              </span>
+            </div>
+          </div>
+
+          <h3 className="text-base font-bold text-[var(--color-wa-text-main)] leading-tight">
+            {name}
+          </h3>
+          
+          {a.service && (
+            <p className="text-sm font-medium text-[var(--color-wa-text-sec)] mt-1 truncate flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-wa-text-sec)] opacity-60" />
+              {a.service}
+            </p>
+          )}
+
+          {/* Consolidated metadata line (Origin, Status, Staff, Phone) */}
+          <div className="flex flex-wrap items-center gap-y-1 gap-x-2 mt-2 text-xs text-[var(--color-wa-text-sec)]">
+            <span className="flex items-center gap-0.5">
+              {a.source === "bot" ? (
+                <svg className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9h14v10H5V9zm3 4h.01M16 13h.01" />
+                </svg>
+              ) : (
+                <svg className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+              )}
+              <span className="font-semibold text-[var(--color-wa-text-main)]">
+                {a.source === "bot" ? "Bot" : "Manual"}
+              </span>
+            </span>
+
+            <span className="opacity-40 select-none">·</span>
+
+            <span className="flex items-center gap-0.5">
+              <svg className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M9.568 3H5.25A2.25 2.25 0 003 5.25v4.318c0 .597.237 1.17.659 1.591l9.581 9.581a1.44 1.44 0 002.036 0l4.319-4.32a1.44 1.44 0 000-2.037L11.16 3.66A2.25 2.25 0 009.568 3z" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 6h.008v.008H6V6z" />
+              </svg>
+              <span>
+                Estado:{" "}
+                <span className={`font-bold ${
+                  a.status === "confirmed" 
+                    ? "text-teal-500 dark:text-teal-400" 
+                    : a.status === "pending" 
+                      ? "text-amber-500 dark:text-amber-400" 
+                      : "text-red-500 dark:text-red-400"
+                }`}>
+                  {STATUS_LABELS[a.status]}
+                </span>
+              </span>
+            </span>
+
+            {a.resource_name && (
+              <>
+                <span className="opacity-40 select-none">·</span>
+                <span className="flex items-center gap-0.5">
+                  <svg className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  Atiende: <span className="font-semibold text-[var(--color-wa-text-main)]">{a.resource_name}</span>
+                </span>
+              </>
+            )}
+
+            {a.contact_phone && a.contact_name && (
+              <>
+                <span className="opacity-40 select-none">·</span>
+                <a 
+                  href={`tel:${a.contact_phone}`} 
+                  className="flex items-center gap-0.5 hover:text-[var(--color-wa-green-dark)] transition-colors"
+                >
+                  <svg className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                  </svg>
+                  <span>{a.contact_phone}</span>
+                </a>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* MIDDLE SECTION: Notes (if any) */}
+      <div className="flex-1 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 md:px-4 min-w-0">
+        {/* Notes */}
+        {a.notes ? (
+          <div className="bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800/80 p-3 rounded-xl text-xs italic text-[var(--color-wa-text-sec)] md:max-w-[280px] lg:max-w-[360px] xl:max-w-[450px] w-full md:mx-auto">
+            <span className="font-semibold not-italic block text-[10px] uppercase tracking-wider text-slate-400 mb-0.5">Nota interna:</span>
+            <span className="line-clamp-2 md:line-clamp-3">"{a.notes}"</span>
+          </div>
+        ) : (
+          <div className="hidden md:block flex-1" /> // spacer
+        )}
+      </div>
+
+      {/* RIGHT SECTION: Actions Bar */}
+      <div className="flex items-center justify-between md:justify-end border-t md:border-t-0 border-[var(--color-wa-sep)] pt-3.5 md:pt-0 mt-1 md:mt-0 gap-2.5 flex-shrink-0">
+        {/* Main Action Buttons */}
+        <div className="flex items-center gap-2 flex-wrap">
           {a.status === "pending" && (
             <button
               onClick={() => onStatusChange(a.id, "confirmed")}
-              className="text-xs px-2.5 py-1 bg-teal-500 text-white rounded-lg font-semibold hover:bg-teal-600 transition-colors"
+              className="text-xs px-4 py-2 bg-teal-500 text-white rounded-full font-semibold hover:bg-teal-600 active:scale-95 transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
             >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
               Confirmar
             </button>
           )}
           {a.status === "confirmed" && (
             <button
               onClick={() => onStatusChange(a.id, "cancelled")}
-              className="text-xs px-2.5 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+              className="text-xs px-4 py-2 bg-red-500 text-white rounded-full font-semibold hover:bg-red-600 active:scale-95 transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
             >
-              Cancelar
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              Cancelar Turno
             </button>
           )}
           {a.status === "pending" && (
             <button
               onClick={() => onStatusChange(a.id, "cancelled")}
-              className="text-xs px-2.5 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+              className="text-xs px-4 py-2 bg-red-500 text-white rounded-full font-semibold hover:bg-red-600 active:scale-95 transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
             >
-              Cancelar
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              Rechazar
             </button>
           )}
           {a.status === "cancelled" && (
             <button
               onClick={() => onStatusChange(a.id, "pending")}
-              className="text-xs px-2.5 py-1 border border-[var(--color-wa-sep)] text-[var(--color-wa-text-sec)] rounded-lg hover:bg-[var(--color-wa-hover)] transition-colors"
+              className="text-xs px-4 py-2 border border-[var(--color-wa-sep)] text-[var(--color-wa-text-sec)] rounded-full font-semibold hover:bg-[var(--color-wa-hover)] active:scale-95 transition-all flex items-center gap-1.5 cursor-pointer"
             >
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H18.2" />
+              </svg>
               Reactivar
             </button>
           )}
+
+          {/* Edit Action Button */}
+          <button
+            onClick={() => onEdit(a)}
+            className="text-xs px-4 py-2 bg-amber-500 text-white rounded-full font-semibold hover:bg-amber-600 active:scale-95 transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            Editar
+          </button>
+
+          {/* Chat WhatsApp Link */}
           {a.conversation_id !== null && (
             <Link
               href={`/?id=${a.conversation_id}`}
-              className="text-xs p-1 rounded border border-[#25D366] text-[#25D366] hover:bg-[#25D366] hover:text-white transition-colors"
-              title="Ir al chat"
+              className="text-xs px-4 py-2 rounded-full border border-[#25D366] text-[#25D366] hover:bg-[#25D366] hover:text-white active:scale-95 transition-all flex items-center gap-1.5 font-semibold"
+              title="Ir al chat de WhatsApp"
             >
-              <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4">
+              <svg viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5">
                 <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/>
               </svg>
+              WhatsApp
             </Link>
           )}
-          <button
-            onClick={() => onDelete(a.id)}
-            className="text-xs p-1 rounded text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
-            title="Eliminar"
-          >
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-            </svg>
-          </button>
         </div>
+
+        {/* Delete Action button */}
+        <button
+          onClick={() => onDelete(a.id)}
+          className="text-xs p-2 rounded-full text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 active:scale-90 transition-all cursor-pointer flex-shrink-0"
+          title="Eliminar turno"
+        >
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+        </button>
       </div>
     </div>
   );
@@ -327,6 +497,7 @@ function DayPanel({
   onAdd,
   onStatusChange,
   onDelete,
+  onEdit,
 }: {
   selectedDay: string;
   appointments: Appointment[];
@@ -334,6 +505,7 @@ function DayPanel({
   onAdd: () => void;
   onStatusChange: (id: number, status: Appointment["status"]) => void;
   onDelete: (id: number) => void;
+  onEdit: (appointment: Appointment) => void;
 }) {
   const label = formatDateLabel(selectedDay);
   const count = appointments.length;
@@ -384,6 +556,7 @@ function DayPanel({
               appointment={a}
               onStatusChange={onStatusChange}
               onDelete={onDelete}
+              onEdit={onEdit}
             />
           ))
         )}
@@ -399,11 +572,13 @@ function ListaView({
   loading,
   onStatusChange,
   onDelete,
+  onEdit,
 }: {
   appointments: Appointment[];
   loading: boolean;
   onStatusChange: (id: number, status: Appointment["status"]) => void;
   onDelete: (id: number) => void;
+  onEdit: (appointment: Appointment) => void;
 }) {
   const grouped = useMemo(() => {
     const g: Record<string, Appointment[]> = {};
@@ -446,6 +621,7 @@ function ListaView({
                 appointment={a}
                 onStatusChange={onStatusChange}
                 onDelete={onDelete}
+                onEdit={onEdit}
               />
             ))}
           </div>
@@ -470,6 +646,7 @@ export default function AppointmentsPage() {
   const [loading, setLoading] = useState(true);
 
   const [showModal, setShowModal] = useState(false);
+  const [editingAppointment, setEditingAppointment] = useState<Appointment | null>(null);
   const [modalDate, setModalDate] = useState("");
   const [modalResource, setModalResource] = useState<number>(0);
   const [modalSlots, setModalSlots] = useState<AvailableSlot[]>([]);
@@ -513,14 +690,19 @@ export default function AppointmentsPage() {
 
   useEffect(() => {
     if (!showModal || !modalDate || !modalResource) return;
-    fetch(`/api/appointments/available?date=${modalDate}&duration=${modalDuration}`)
+    const excludeQuery = editingAppointment ? `&excludeAppointmentId=${editingAppointment.id}` : "";
+    fetch(`/api/appointments/available?date=${modalDate}&duration=${modalDuration}${excludeQuery}`)
       .then((r) => r.json())
       .then((d) => {
         const filtered = (d.slots ?? []).filter((s: AvailableSlot) => s.resource_id === modalResource);
         setModalSlots(filtered);
-        setModalSlot(filtered[0]?.time_start ?? "");
+        
+        const hasSlot = filtered.some((s: AvailableSlot) => s.time_start === modalSlot);
+        if (!hasSlot && !editingAppointment) {
+          setModalSlot(filtered[0]?.time_start ?? "");
+        }
       });
-  }, [showModal, modalDate, modalResource, modalDuration]);
+  }, [showModal, modalDate, modalResource, modalDuration, editingAppointment]);
 
   const appointmentDays = useMemo(() => new Set(appointments.map((a) => a.date)), [appointments]);
   const apptsByDay = useCallback(
@@ -546,6 +728,7 @@ export default function AppointmentsPage() {
   }
 
   function openModal(date: string) {
+    setEditingAppointment(null);
     setModalDate(date);
     setModalService("");
     setModalName("");
@@ -556,12 +739,29 @@ export default function AppointmentsPage() {
     setShowModal(true);
   }
 
+  function openEditModal(a: Appointment) {
+    setEditingAppointment(a);
+    setModalDate(a.date);
+    setModalResource(a.resource_id);
+    setModalService(a.service ?? "");
+    setModalName(a.contact_name ?? "");
+    setModalPhone(a.contact_phone ?? "");
+    setModalNotes(a.notes ?? "");
+    setModalDuration(a.duration_minutes);
+    setModalSlot(a.time_start);
+    setShowModal(true);
+  }
+
   async function saveAppointment() {
     if (!modalDate || !modalSlot || !modalResource) return;
     setSavingModal(true);
     try {
-      const res = await fetch("/api/appointments", {
-        method: "POST",
+      const url = editingAppointment 
+        ? `/api/appointments/${editingAppointment.id}` 
+        : "/api/appointments";
+      const method = editingAppointment ? "PUT" : "POST";
+      const res = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           resource_id: modalResource,
@@ -576,6 +776,7 @@ export default function AppointmentsPage() {
       });
       if (res.ok) {
         setShowModal(false);
+        setEditingAppointment(null);
         fetchData();
       }
     } finally {
@@ -610,6 +811,7 @@ export default function AppointmentsPage() {
     onAdd: () => openModal(selectedDay),
     onStatusChange: changeStatus,
     onDelete: setDeleteId,
+    onEdit: openEditModal,
   };
 
   return (
@@ -617,52 +819,64 @@ export default function AppointmentsPage() {
       <TopNav />
 
       <main className="flex-1 flex flex-col overflow-hidden">
-        {/* Desktop: calendar split OR lista */}
-        <div className="hidden md:flex flex-1 overflow-hidden md:p-3 md:gap-3">
-          {viewMode === "calendar" ? (
-            <>
-              {/* Left: mini calendar card */}
-              <div className="w-[350px] flex-shrink-0 overflow-y-auto">
-                <div className="bg-white dark:bg-[var(--color-wa-panel-l)] rounded-2xl p-5 shadow-[0_1px_4px_rgba(0,0,0,0.08)]">
-                  <MiniCalendar {...calendarProps} />
+        <PullToRefresh onRefresh={fetchData} className="flex-1 flex flex-col overflow-hidden">
+          {/* Desktop: calendar split OR lista */}
+          <div className="hidden md:flex flex-1 overflow-hidden md:p-3 md:gap-3">
+            {viewMode === "calendar" ? (
+              <>
+                {/* Left: mini calendar card */}
+                <div className="w-[350px] flex-shrink-0 overflow-y-auto">
+                  <div className="bg-white dark:bg-[var(--color-wa-panel-l)] rounded-2xl p-5 shadow-[0_1px_4px_rgba(0,0,0,0.08)]">
+                    <MiniCalendar {...calendarProps} />
+                  </div>
                 </div>
-              </div>
-              {/* Right: day panel card */}
+                {/* Right: day panel card */}
+                <div className="flex-1 bg-white dark:bg-[var(--color-wa-panel-l)] rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.08)] overflow-hidden flex flex-col">
+                  <DayPanel {...dayPanelProps} />
+                </div>
+              </>
+            ) : (
               <div className="flex-1 bg-white dark:bg-[var(--color-wa-panel-l)] rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.08)] overflow-hidden flex flex-col">
-                <DayPanel {...dayPanelProps} />
+                <ListaView
+                  appointments={appointments}
+                  loading={loading}
+                  onStatusChange={changeStatus}
+                  onDelete={setDeleteId}
+                  onEdit={openEditModal}
+                />
               </div>
-            </>
-          ) : (
-            <div className="flex-1 bg-white dark:bg-[var(--color-wa-panel-l)] rounded-2xl shadow-[0_1px_4px_rgba(0,0,0,0.08)] overflow-hidden flex flex-col">
-              <ListaView
-                appointments={appointments}
-                loading={loading}
-                onStatusChange={changeStatus}
-                onDelete={setDeleteId}
-              />
-            </div>
-          )}
-        </div>
+            )}
+          </div>
 
-        {/* Mobile: mini calendar + day panel stacked */}
-        <div className="md:hidden flex flex-col flex-1 overflow-hidden">
-          <div className="flex-shrink-0 bg-[var(--color-wa-panel-l)] border-b border-[var(--color-wa-sep)] px-4 pt-3 pb-4">
-            <MiniCalendar {...calendarProps} compact />
+          {/* Mobile: mini calendar + day panel stacked */}
+          <div className="md:hidden flex flex-col flex-1 overflow-hidden">
+            <div className="flex-shrink-0 bg-[var(--color-wa-panel-l)] border-b border-[var(--color-wa-sep)] px-4 pt-3 pb-4">
+              <MiniCalendar {...calendarProps} compact />
+            </div>
+            <div className="flex-1 overflow-hidden flex flex-col">
+              <DayPanel {...dayPanelProps} />
+            </div>
           </div>
-          <div className="flex-1 overflow-hidden flex flex-col">
-            <DayPanel {...dayPanelProps} />
-          </div>
-        </div>
+        </PullToRefresh>
       </main>
 
-      {/* New appointment modal */}
+      {/* New/Edit appointment modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/40 backdrop-blur-sm p-4">
-          <div className="bg-[var(--color-wa-panel-l)] rounded-2xl w-full max-w-sm shadow-2xl animate-modal">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              saveAppointment();
+            }}
+            className="bg-[var(--color-wa-panel-l)] rounded-2xl w-full max-w-sm shadow-2xl animate-modal"
+          >
             <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--color-wa-sep)]">
-              <h2 className="text-base font-semibold text-[var(--color-wa-text-main)]">Nuevo turno</h2>
+              <h2 className="text-base font-semibold text-[var(--color-wa-text-main)]">
+                {editingAppointment ? "Editar turno" : "Nuevo turno"}
+              </h2>
               <button
-                onClick={() => setShowModal(false)}
+                type="button"
+                onClick={() => { setShowModal(false); setEditingAppointment(null); }}
                 className="text-[var(--color-wa-text-sec)] hover:text-[var(--color-wa-text-main)]"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -721,6 +935,7 @@ export default function AppointmentsPage() {
                     {modalSlots.map((s) => (
                       <button
                         key={s.time_start}
+                        type="button"
                         onClick={() => setModalSlot(s.time_start)}
                         className={`text-sm py-2 rounded-lg border transition-colors ${
                           modalSlot === s.time_start
@@ -741,7 +956,7 @@ export default function AppointmentsPage() {
                   type="text"
                   value={modalService}
                   onChange={(e) => setModalService(e.target.value)}
-                  placeholder="Ej: Diagnóstico gratuito"
+                  placeholder="Ej: Servicio"
                   className="w-full text-sm bg-[var(--color-wa-input)] border border-[var(--color-wa-sep)] rounded-lg px-3 py-2.5 text-[var(--color-wa-text-main)] focus:outline-none focus:border-[var(--color-wa-green)] placeholder:text-[var(--color-wa-text-sec)]"
                 />
               </div>
@@ -783,20 +998,21 @@ export default function AppointmentsPage() {
 
             <div className="px-5 pb-5 flex gap-2">
               <button
-                onClick={() => setShowModal(false)}
+                type="button"
+                onClick={() => { setShowModal(false); setEditingAppointment(null); }}
                 className="flex-1 py-3 border border-[var(--color-wa-sep)] text-[var(--color-wa-text-main)] text-sm font-medium rounded-xl hover:bg-[var(--color-wa-hover)] transition-colors"
               >
                 Cancelar
               </button>
               <button
-                onClick={saveAppointment}
+                type="submit"
                 disabled={!modalSlot || savingModal}
                 className="flex-1 py-3 bg-[var(--color-wa-green)] text-[var(--color-wa-green-text)] text-sm font-semibold rounded-xl hover:bg-[var(--color-wa-green-dark)] disabled:opacity-50 transition-colors"
               >
-                {savingModal ? "Guardando…" : "Guardar turno"}
+                {savingModal ? "Guardando…" : editingAppointment ? "Guardar cambios" : "Guardar turno"}
               </button>
             </div>
-          </div>
+          </form>
         </div>
       )}
 
@@ -812,3 +1028,4 @@ export default function AppointmentsPage() {
     </div>
   );
 }
+

@@ -178,6 +178,21 @@ function migrate(db: Database.Database) {
     db.exec("ALTER TABLE leads ADD COLUMN summary TEXT");
   } catch { /* ya existe */ }
 
+  try {
+    db.exec("ALTER TABLE resources ADD COLUMN phone TEXT");
+  } catch { /* ya existe */ }
+
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS promotions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      description TEXT,
+      discount TEXT,
+      active INTEGER NOT NULL DEFAULT 1,
+      created_at INTEGER NOT NULL DEFAULT (unixepoch())
+    );
+  `);
+
   // Limpieza única de datos de ejemplo del repo original
   const cleaned = db.prepare<[string], { value: string }>(
     "SELECT value FROM settings WHERE key = ?"
@@ -539,7 +554,7 @@ export function listResources(): Resource[] {
   return getDb().prepare<[], Resource>("SELECT * FROM resources WHERE active = 1 ORDER BY id").all();
 }
 
-export function getAvailableSlots(date: string, durationMinutes: number): AvailableSlot[] {
+export function getAvailableSlots(date: string, durationMinutes: number, excludeAppointmentId?: number): AvailableSlot[] {
   const db = getDb();
   // JS Date with noon UTC avoids DST shifts when parsing YYYY-MM-DD
   const dayOfWeek = new Date(date + "T12:00:00Z").getUTCDay();
@@ -553,11 +568,17 @@ export function getAvailableSlots(date: string, durationMinutes: number): Availa
       )
       .all(resource.id, dayOfWeek);
 
-    const booked = db
-      .prepare<[number, string], Pick<Appointment, "time_start" | "time_end">>(
-        "SELECT time_start, time_end FROM appointments WHERE resource_id = ? AND date = ? AND status != 'cancelled'"
-      )
-      .all(resource.id, date);
+    const booked = excludeAppointmentId
+      ? db
+          .prepare<[number, string, number], Pick<Appointment, "time_start" | "time_end">>(
+            "SELECT time_start, time_end FROM appointments WHERE resource_id = ? AND date = ? AND status != 'cancelled' AND id != ?"
+          )
+          .all(resource.id, date, excludeAppointmentId)
+      : db
+          .prepare<[number, string], Pick<Appointment, "time_start" | "time_end">>(
+            "SELECT time_start, time_end FROM appointments WHERE resource_id = ? AND date = ? AND status != 'cancelled'"
+          )
+          .all(resource.id, date);
 
     const blocked = db
       .prepare<[number, string], Pick<BlockedSlot, "time_start" | "time_end">>(
@@ -647,6 +668,49 @@ export function updateAppointmentStatus(
   getDb()
     .prepare("UPDATE appointments SET status = ? WHERE id = ?")
     .run(status, id);
+}
+
+export function updateAppointment(
+  id: number,
+  data: {
+    resource_id: number;
+    service?: string | null;
+    date: string;
+    time_start: string;
+    duration_minutes: number;
+    notes?: string | null;
+    contact_name?: string | null;
+    contact_phone?: string | null;
+  }
+): void {
+  const endMins = timeToMinutes(data.time_start) + data.duration_minutes;
+  const time_end = minutesToTime(endMins);
+  getDb()
+    .prepare(
+      `UPDATE appointments
+       SET resource_id = ?,
+           service = ?,
+           date = ?,
+           time_start = ?,
+           time_end = ?,
+           duration_minutes = ?,
+           notes = ?,
+           contact_name = ?,
+           contact_phone = ?
+       WHERE id = ?`
+    )
+    .run(
+      data.resource_id,
+      data.service ?? null,
+      data.date,
+      data.time_start,
+      time_end,
+      data.duration_minutes,
+      data.notes ?? null,
+      data.contact_name ?? null,
+      data.contact_phone ?? null,
+      id
+    );
 }
 
 export function deleteAppointment(id: number): void {
@@ -749,18 +813,55 @@ export function deleteService(id: number): void {
   getDb().prepare("DELETE FROM services WHERE id = ?").run(id);
 }
 
+// ── Promotions ──────────────────────────────────────────────
+
+export interface Promotion {
+  id: number;
+  title: string;
+  description: string | null;
+  discount: string | null;
+  active: number;
+  created_at: number;
+}
+
+export function listPromotions(includeInactive = false): Promotion[] {
+  const query = includeInactive
+    ? "SELECT * FROM promotions ORDER BY created_at DESC"
+    : "SELECT * FROM promotions WHERE active = 1 ORDER BY created_at DESC";
+  return getDb().prepare<[], Promotion>(query).all();
+}
+
+export function createPromotion(data: { title: string; description?: string | null; discount?: string | null }): number {
+  const res = getDb()
+    .prepare("INSERT INTO promotions (title, description, discount) VALUES (?, ?, ?)")
+    .run(data.title, data.description ?? null, data.discount ?? null);
+  return res.lastInsertRowid as number;
+}
+
+export function updatePromotion(id: number, data: Partial<Pick<Promotion, "title" | "description" | "discount" | "active">>): void {
+  const entries = Object.entries(data).filter(([, v]) => v !== undefined);
+  if (!entries.length) return;
+  const fields = entries.map(([k]) => `${k} = ?`).join(", ");
+  const values = entries.map(([, v]) => v);
+  getDb().prepare(`UPDATE promotions SET ${fields} WHERE id = ?`).run(...values, id);
+}
+
+export function deletePromotion(id: number): void {
+  getDb().prepare("DELETE FROM promotions WHERE id = ?").run(id);
+}
+
 // ── Resources CRUD ──────────────────────────────────────────
 
 export function listAllResources(): Resource[] {
   return getDb().prepare<[], Resource>("SELECT * FROM resources ORDER BY id").all();
 }
 
-export function createResource(name: string): number {
-  const res = getDb().prepare("INSERT INTO resources (name) VALUES (?)").run(name);
+export function createResource(name: string, phone?: string | null): number {
+  const res = getDb().prepare("INSERT INTO resources (name, phone) VALUES (?, ?)").run(name, phone ?? null);
   return res.lastInsertRowid as number;
 }
 
-export function updateResource(id: number, data: { name?: string; active?: number }): void {
+export function updateResource(id: number, data: { name?: string; phone?: string | null; active?: number }): void {
   const fields = Object.entries(data).map(([k]) => `${k} = ?`).join(", ");
   const values = Object.values(data);
   getDb().prepare(`UPDATE resources SET ${fields} WHERE id = ?`).run(...values, id);
