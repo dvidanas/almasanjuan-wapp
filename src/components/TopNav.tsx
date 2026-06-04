@@ -68,9 +68,10 @@ export function TopNav() {
     <header className="h-14 flex-shrink-0 flex items-stretch justify-between bg-[var(--color-wa-header)] border-b border-[var(--color-wa-sep)] z-40">
       {/* Left: name */}
       <div className="flex items-center px-4 flex-shrink-0">
-        <span className="text-base font-semibold tracking-wide select-none" style={{ color: "var(--wa-green)" }}>
-          Alma San Juan
-        </span>
+        <div className="flex flex-col leading-none">
+          <span className="text-sm font-bold" style={{ color: "var(--wa-green)" }}>{clientConfig.businessName}</span>
+          <span className="text-[10px] text-[var(--color-wa-text-sec)] mt-0.5">Panel de gestión</span>
+        </div>
       </div>
 
       {/* Center: tabs */}
