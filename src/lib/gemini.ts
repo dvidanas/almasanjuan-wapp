@@ -1,4 +1,4 @@
-import { buildSystemPrompt } from "./system-prompt";
+import { getSystemPrompt as buildSystemPrompt } from "./system-prompt";
 
 export interface ChatMessage {
   role: "user" | "assistant";
