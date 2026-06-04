@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { TopNav, BottomNav } from "@/components/TopNav";
@@ -1028,4 +1028,3 @@ export default function AppointmentsPage() {
     </div>
   );
 }
-

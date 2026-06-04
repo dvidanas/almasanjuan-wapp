@@ -1,29 +1,32 @@
 export const clientConfig = {
-  businessName: 'Alma San Juan',
-  botName: 'Giuli',
-  address: 'Paula A. de Sarmiento 1085 Sur, Barrio Porres, San Juan',
-  workingHours: {
-    weekdays: { open: '09:30', close: '20:00', days: [1, 2, 3, 4, 5] },
-    saturday: { open: '09:00', close: '17:00', days: [6] },
-    sunday: false,
+  name: "Alma San Juan",
+  businessName: "Alma San Juan",
+  businessDescription: "Centro especializado en Depilación Láser en San Juan",
+  behavior: "amable, simpática y dulce",
+  slogan: "",
+  address: "Paula A. de Sarmiento 1085 Sur, Barrio Porres, San Juan",
+  phone: "",
+
+  hours: {
+    monday:    { open: "09:30", close: "20:00" },
+    tuesday:   { open: "09:30", close: "20:00" },
+    wednesday: { open: "09:30", close: "20:00" },
+    thursday:  { open: "09:30", close: "20:00" },
+    friday:    { open: "09:30", close: "20:00" },
+    saturday:  { open: "09:00", close: "17:00" },
+    sunday:    null,
   },
+
+  services: [],
+
+  botName: "Giuli",
+  botBooking: false,
+  appointmentDuration: 30,
+  loginPin: "1588",
+
+  responseDelayMs: 8000,
   appointments: {
     enabled: true,
-    botBooking: false,
-    manualOnly: true,
-    defaultDuration: 30,
-    resources: ['Principal'],
-    confirmationMode: 'manual' as 'manual' | 'auto',
-  },
-  ycloud: {
-    phoneNumberId: '',
-    apiKey: '',
-    webhookSecret: '',
-  },
-  dashboard: {
-    title: 'Alma San Juan',
-    subtitle: 'Panel de gestión',
-    footerText: 'Desarrollado por Feer',
-    pinLogin: '1588',
+    resource: "Principal",
   },
 };

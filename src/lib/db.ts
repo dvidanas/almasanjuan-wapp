@@ -3,14 +3,8 @@ import path from "node:path";
 import fs from "node:fs";
 import { clientConfig } from "./client.config";
 
-const DB_DIR = path.join(process.cwd(), "data");
-const DB_PATH = path.join(DB_DIR, "messages.db");
-
-const TZ = "America/Argentina/San_Juan";
-
-export function todayAR(): string {
-  return new Date().toLocaleDateString("sv-SE", { timeZone: TZ });
-}
+const DB_PATH = process.env.DB_PATH || path.join(process.cwd(), "data", "messages.db");
+const DB_DIR = path.dirname(DB_PATH);
 
 let _db: Database.Database | null = null;
 
@@ -121,24 +115,25 @@ function migrate(db: Database.Database) {
     CREATE INDEX IF NOT EXISTS idx_blocked_date ON blocked_slots(resource_id, date);
   `);
 
-  // Seed recursos desde client.config si la tabla está vacía y appointments está habilitado
-  const apptEnabled = clientConfig.appointments?.enabled;
-  if (apptEnabled) {
+  // Seed recursos desde client.config si la tabla está vacía
+  {
     const count = db.prepare<[], { count: number }>("SELECT COUNT(*) as count FROM resources").get()!;
     if (count.count === 0) {
+      const appt = clientConfig.appointments as { enabled?: boolean; resource?: string } | undefined;
+      const resourceName = appt?.resource ?? clientConfig.businessName;
       const insertRes = db.prepare("INSERT INTO resources (name) VALUES (?)");
       const insertSlot = db.prepare(
         "INSERT INTO availability_slots (resource_id, day_of_week, time_start, time_end) VALUES (?, ?, ?, ?)"
       );
-      const wh = clientConfig.workingHours;
-      for (const name of clientConfig.appointments.resources) {
-        const r = insertRes.run(name);
-        for (const day of wh.weekdays.days) {
-          insertSlot.run(r.lastInsertRowid, day, wh.weekdays.open, wh.weekdays.close);
-        }
-        for (const day of wh.saturday.days) {
-          insertSlot.run(r.lastInsertRowid, day, wh.saturday.open, wh.saturday.close);
-        }
+      const r = insertRes.run(resourceName);
+      // Disponibilidad Lun–Sáb según horarios de client.config
+      const days: Array<[number, keyof typeof clientConfig.hours]> = [
+        [1, "monday"], [2, "tuesday"], [3, "wednesday"],
+        [4, "thursday"], [5, "friday"], [6, "saturday"],
+      ];
+      for (const [dayNum, dayKey] of days) {
+        const h = clientConfig.hours[dayKey];
+        if (h) insertSlot.run(r.lastInsertRowid, dayNum, h.open, h.close);
       }
     }
   }
@@ -166,7 +161,21 @@ function migrate(db: Database.Database) {
   if (settingsCount.count === 0) {
     const ins = db.prepare("INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)");
     ins.run("business_name", clientConfig.businessName);
-    ins.run("business_description", clientConfig.dashboard.subtitle);
+    ins.run("business_description", clientConfig.businessDescription.trim());
+  }
+
+  // Seed servicios desde client.config si la tabla está vacía
+  const servicesCount = db.prepare<[], { count: number }>("SELECT COUNT(*) as count FROM services").get()!;
+  if (servicesCount.count === 0) {
+    const ins = db.prepare("INSERT INTO services (name, description, price, duration_minutes, active) VALUES (?, ?, ?, ?, 1)");
+    for (const svc of clientConfig.services) {
+      ins.run(
+        svc.name,
+        svc.description ?? null,
+        String(svc.price),
+        svc.duration ?? clientConfig.appointmentDuration ?? 40,
+      );
+    }
   }
 
   // Migraciones incrementales (idempotentes con try/catch)
@@ -192,22 +201,6 @@ function migrate(db: Database.Database) {
       created_at INTEGER NOT NULL DEFAULT (unixepoch())
     );
   `);
-
-  // Limpieza única de datos de ejemplo del repo original
-  const cleaned = db.prepare<[string], { value: string }>(
-    "SELECT value FROM settings WHERE key = ?"
-  ).get("_sample_data_cleaned");
-  if (!cleaned) {
-    db.transaction(() => {
-      db.exec("DELETE FROM leads");
-      db.exec("DELETE FROM messages");
-      db.exec("DELETE FROM appointments");
-      db.exec("DELETE FROM conversations");
-      db.exec("DELETE FROM processed_webhook_messages");
-      db.prepare("INSERT OR IGNORE INTO settings (key, value) VALUES (?, ?)")
-        .run("_sample_data_cleaned", "1");
-    })();
-  }
 
 }
 
@@ -466,9 +459,18 @@ export function getLeadStats(): Record<string, number> {
 
 // ── Appointments ────────────────────────────────────────────
 
+interface AppointmentsConfig {
+  enabled: boolean;
+  defaultDuration: number;
+  resources: string[];
+  workingHours: { start: string; end: string };
+  workingDays: number[];
+}
+
 export interface Resource {
   id: number;
   name: string;
+  phone: string | null;
   active: number;
 }
 
@@ -602,9 +604,9 @@ export function getAvailableSlots(date: string, durationMinutes: number, exclude
 
 export function getNextAvailableSlots(days: number, durationMinutes = 30): Array<AvailableSlot & { date: string }> {
   const result: Array<AvailableSlot & { date: string }> = [];
-  const today = todayAR();
+  const now = new Date();
   for (let i = 0; i < days; i++) {
-    const d = new Date(today + "T12:00:00");
+    const d = new Date(now);
     d.setDate(d.getDate() + i);
     const dateStr = d.toISOString().slice(0, 10);
     const slots = getAvailableSlots(dateStr, durationMinutes);
@@ -728,37 +730,17 @@ export function hasAppointmentForSlot(conversationId: number, date: string, time
 }
 
 export function getAppointmentStats(): { pending: number; confirmed: number; cancelled: number } {
+  const today = new Date().toISOString().slice(0, 10);
   const rows = getDb()
     .prepare<[string], { status: string; count: number }>(
       "SELECT status, COUNT(*) as count FROM appointments WHERE date >= ? GROUP BY status"
     )
-    .all(todayAR());
+    .all(today);
   const map = Object.fromEntries(rows.map((r) => [r.status, r.count]));
   return {
     pending: map.pending ?? 0,
     confirmed: map.confirmed ?? 0,
     cancelled: map.cancelled ?? 0,
-  };
-}
-
-// ── Métricas globales ───────────────────────────────────────
-
-export interface Metrics {
-  totalLeads: number;
-  totalAppointments: number;
-  aiMessages: number;
-  humanInterventions: number;
-}
-
-export function getMetrics(): Metrics {
-  const db = getDb();
-  const count = (sql: string) =>
-    db.prepare<[], { count: number }>(sql).get()!.count;
-  return {
-    totalLeads: count("SELECT COUNT(*) as count FROM leads"),
-    totalAppointments: count("SELECT COUNT(*) as count FROM appointments"),
-    aiMessages: count("SELECT COUNT(*) as count FROM messages WHERE role = 'assistant'"),
-    humanInterventions: count("SELECT COUNT(*) as count FROM conversations WHERE mode = 'HUMAN'"),
   };
 }
 
@@ -862,8 +844,10 @@ export function createResource(name: string, phone?: string | null): number {
 }
 
 export function updateResource(id: number, data: { name?: string; phone?: string | null; active?: number }): void {
-  const fields = Object.entries(data).map(([k]) => `${k} = ?`).join(", ");
-  const values = Object.values(data);
+  const entries = Object.entries(data).filter(([, v]) => v !== undefined);
+  if (!entries.length) return;
+  const fields = entries.map(([k]) => `${k} = ?`).join(", ");
+  const values = entries.map(([, v]) => v);
   getDb().prepare(`UPDATE resources SET ${fields} WHERE id = ?`).run(...values, id);
 }
 
@@ -913,4 +897,112 @@ export function setAvailabilityForResource(
   db.prepare("DELETE FROM availability_slots WHERE resource_id = ?").run(resourceId);
   const ins = db.prepare("INSERT INTO availability_slots (resource_id, day_of_week, time_start, time_end) VALUES (?, ?, ?, ?)");
   for (const s of slots) ins.run(resourceId, s.day_of_week, s.time_start, s.time_end);
+}
+
+// ── Closed dates (special closed days) ──────────────────────
+
+export function listClosedDates(): string[] {
+  const raw = getSetting("closed_dates");
+  if (!raw) return [];
+  try { return JSON.parse(raw) as string[]; } catch { return []; }
+}
+
+export function addClosedDate(date: string): void {
+  const db = getDb();
+  const dates = listClosedDates();
+  if (!dates.includes(date)) {
+    setSetting("closed_dates", JSON.stringify([...dates, date].sort()));
+  }
+  const resources = db.prepare<[], { id: number }>("SELECT id FROM resources WHERE active = 1").all();
+  const insert = db.prepare(
+    "INSERT OR IGNORE INTO blocked_slots (resource_id, date, time_start, time_end, reason) VALUES (?, ?, '00:00', '23:59', 'closed')"
+  );
+  for (const r of resources) insert.run(r.id, date);
+}
+
+export function removeClosedDate(date: string): void {
+  const dates = listClosedDates().filter((d) => d !== date);
+  setSetting("closed_dates", JSON.stringify(dates));
+  getDb()
+    .prepare("DELETE FROM blocked_slots WHERE date = ? AND time_start = '00:00' AND time_end = '23:59' AND reason = 'closed'")
+    .run(date);
+}
+
+// ── Métricas ─────────────────────────────────────────────────
+
+export interface MetricsResult {
+  contacts: { total: number; thisWeek: number; thisMonth: number };
+  messages: { total: number; ai: number; byUser: number; humanHandled: number; humanInterventions: number };
+  appointments: { total: number; pending: number; confirmed: number; cancelled: number; thisMonth: number; fromBot: number; fromManual: number };
+  conversion: { rate: number; contactsWithAppts: number };
+  topServices: Array<{ service: string; count: number }>;
+  appointmentsByDay: Array<{ date: string; count: number }>;
+  messagesByDay: Array<{ day: string; user: number; ai: number }>;
+}
+
+export function getMetrics(): MetricsResult {
+  const db = getDb();
+
+  const totalContacts = db.prepare<[], { c: number }>("SELECT COUNT(*) as c FROM conversations").get()!.c;
+  const weekContacts = db.prepare<[], { c: number }>("SELECT COUNT(*) as c FROM conversations WHERE created_at >= unixepoch('now', '-7 days')").get()!.c;
+  const monthContacts = db.prepare<[], { c: number }>("SELECT COUNT(*) as c FROM conversations WHERE created_at >= unixepoch('now', '-30 days')").get()!.c;
+
+  const msgRows = db.prepare<[], { role: string; count: number }>("SELECT role, COUNT(*) as count FROM messages GROUP BY role").all();
+  const msgMap: Record<string, number> = Object.fromEntries(msgRows.map(r => [r.role, r.count]));
+  const humanInterventions = db.prepare<[], { c: number }>("SELECT COUNT(*) as c FROM conversations WHERE mode = 'HUMAN'").get()!.c;
+
+  const totalAppts = db.prepare<[], { c: number }>("SELECT COUNT(*) as c FROM appointments").get()!.c;
+  const apptByStatus = db.prepare<[], { status: string; count: number }>("SELECT status, COUNT(*) as count FROM appointments GROUP BY status").all();
+  const apptStatus: Record<string, number> = Object.fromEntries(apptByStatus.map(r => [r.status, r.count]));
+  const monthAppts = db.prepare<[], { c: number }>("SELECT COUNT(*) as c FROM appointments WHERE date >= date('now', 'start of month')").get()!.c;
+  const apptBySource = db.prepare<[], { source: string; count: number }>("SELECT source, COUNT(*) as count FROM appointments GROUP BY source").all();
+  const sourceMap: Record<string, number> = Object.fromEntries(apptBySource.map(r => [r.source, r.count]));
+
+  const contactsWithAppts = db.prepare<[], { c: number }>("SELECT COUNT(DISTINCT conversation_id) as c FROM appointments WHERE conversation_id IS NOT NULL").get()!.c;
+
+  const topServices = db.prepare<[], { service: string; count: number }>(
+    "SELECT service, COUNT(*) as count FROM appointments WHERE service IS NOT NULL AND service != '' GROUP BY service ORDER BY count DESC LIMIT 6"
+  ).all();
+
+  const appointmentsByDay = db.prepare<[], { date: string; count: number }>(
+    "SELECT date, COUNT(*) as count FROM appointments WHERE date >= date('now', '-29 days') GROUP BY date ORDER BY date"
+  ).all();
+
+  const msgsByDayRaw = db.prepare<[], { day: string; role: string; count: number }>(
+    "SELECT date(created_at, 'unixepoch') as day, role, COUNT(*) as count FROM messages WHERE created_at >= unixepoch('now', '-13 days') GROUP BY day, role ORDER BY day"
+  ).all();
+  const msgsByDayMap: Record<string, { user: number; ai: number }> = {};
+  for (const r of msgsByDayRaw) {
+    if (!msgsByDayMap[r.day]) msgsByDayMap[r.day] = { user: 0, ai: 0 };
+    if (r.role === "user") msgsByDayMap[r.day].user = r.count;
+    if (r.role === "assistant") msgsByDayMap[r.day].ai = r.count;
+  }
+  const messagesByDay = Object.entries(msgsByDayMap).map(([day, v]) => ({ day, ...v }));
+
+  return {
+    contacts: { total: totalContacts, thisWeek: weekContacts, thisMonth: monthContacts },
+    messages: {
+      total: (msgMap.user ?? 0) + (msgMap.assistant ?? 0) + (msgMap.human ?? 0),
+      ai: msgMap.assistant ?? 0,
+      byUser: msgMap.user ?? 0,
+      humanHandled: msgMap.human ?? 0,
+      humanInterventions,
+    },
+    appointments: {
+      total: totalAppts,
+      pending: apptStatus.pending ?? 0,
+      confirmed: apptStatus.confirmed ?? 0,
+      cancelled: apptStatus.cancelled ?? 0,
+      thisMonth: monthAppts,
+      fromBot: sourceMap.bot ?? 0,
+      fromManual: sourceMap.manual ?? 0,
+    },
+    conversion: {
+      rate: totalContacts > 0 ? Math.round((contactsWithAppts / totalContacts) * 1000) / 10 : 0,
+      contactsWithAppts,
+    },
+    topServices,
+    appointmentsByDay,
+    messagesByDay,
+  };
 }

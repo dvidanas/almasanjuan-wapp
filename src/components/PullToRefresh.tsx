@@ -14,15 +14,15 @@ function isAtScrollTop(element: HTMLElement | null): boolean {
     if (el === document.body || el === document.documentElement) {
       return window.scrollY === 0;
     }
-
+    
     const style = window.getComputedStyle(el);
     const overflowY = style.overflowY;
     const isScrollable = overflowY === "auto" || overflowY === "scroll";
-
+    
     if (isScrollable && el.scrollHeight > el.clientHeight) {
       return el.scrollTop === 0;
     }
-
+    
     el = el.parentElement;
   }
   return window.scrollY === 0;
@@ -51,19 +51,22 @@ export function PullToRefresh({ onRefresh, children, className }: PullToRefreshP
       const diffY = currentY - startY.current;
 
       if (diffY > 0) {
+        // Prevent default browser behavior (e.g. browser pull-to-refresh or bounce)
         if (e.cancelable) {
           e.preventDefault();
         }
-
+        
+        // Elastic resistance formula
         const distance = Math.min(diffY * 0.35, 100);
         setPullDistance(distance);
-
+        
         if (distance >= 60) {
           setStatus("canRelease");
         } else {
           setStatus("pulling");
         }
       } else if (diffY < 0) {
+        // If user pulls up, cancel the pull gesture and allow normal scrolling
         isPulling.current = false;
         setPullDistance(0);
         setStatus("idle");
@@ -76,7 +79,7 @@ export function PullToRefresh({ onRefresh, children, className }: PullToRefreshP
 
       if (status === "canRelease" || pullDistance >= 60) {
         setStatus("refreshing");
-        setPullDistance(50);
+        setPullDistance(50); // Lock height while loading
         try {
           await onRefresh();
         } catch (err) {
@@ -145,6 +148,7 @@ export function PullToRefresh({ onRefresh, children, className }: PullToRefreshP
         </div>
       )}
 
+      {/* Main page content wrapper with elastic offset */}
       <div
         className="flex-1 flex flex-col overflow-hidden"
         style={{

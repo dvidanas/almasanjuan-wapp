@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState, useEffect, useCallback } from "react";
 import { TopNav, BottomNav } from "@/components/TopNav";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
@@ -395,4 +395,3 @@ export default function ServicesPage() {
     </div>
   );
 }
-
