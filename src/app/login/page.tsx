@@ -67,23 +67,16 @@ function LoginForm() {
     }}>
 
       {/* Brand */}
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.5rem" }}>
-        <svg width="220" height="80" viewBox="0 0 220 80" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginBottom: "0.5rem" }}>
-          {/* ALMA (Charcoal Slate / var(--text-main)) */}
-          <text x="25" y="44" fontFamily="Georgia, serif" fontSize="28" fontWeight="normal" fill="var(--text-main)" letterSpacing="0.05em">ALMa</text>
-          
-          {/* The V with Hair Strand */}
-          <path d="M102 24 C104 36, 107 50, 111 50 C116 50, 122 33, 127 16" stroke="var(--wa-green)" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round" />
-          
-          {/* Hair strand: coming out from the top-right of the V, loops elegantly */}
-          <path d="M127 16 C129 6, 134 0, 137 5 C140 9, 136 19, 129 25" stroke="var(--text-main)" strokeWidth="1.25" strokeLinecap="round" />
-          
-          {/* San Juan (Plum / var(--wa-green)) */}
-          <text x="138" y="44" fontFamily="-apple-system, BlinkMacSystemFont, sans-serif" fontSize="13" fontWeight="500" fill="var(--wa-green)" letterSpacing="0.02em">San Juan</text>
-          
-          {/* DEPILACIÓN DEFINITIVA LÁSER */}
-          <text x="110" y="66" textAnchor="middle" fontFamily="-apple-system, BlinkMacSystemFont, sans-serif" fontSize="7" fontWeight="600" fill="var(--text-sec)" letterSpacing="0.28em">DEPILACIÓN DEFINITIVA LÁSER</text>
-        </svg>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.75rem" }}>
+        <p style={{
+          color: "var(--wa-green)",
+          fontSize: "1.75rem",
+          fontWeight: 600,
+          letterSpacing: "0.04em",
+          margin: 0,
+        }}>
+          Alma San Juan
+        </p>
         <p style={{
           color: "var(--text-sec)",
           fontSize: "0.75rem",
