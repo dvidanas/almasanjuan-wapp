@@ -12,6 +12,7 @@
   --color-wa-text-sec: var(--text-sec);
   --color-wa-green: var(--wa-green);
   --color-wa-green-dark: var(--wa-green-d);
+  --color-wa-green-text: var(--wa-green-text);
   --color-wa-sep: var(--color-sep);
   --color-wa-hover: var(--bg-hover);
 
@@ -64,8 +65,8 @@
   --bg-header: #FFFFFF;
   --text-main: #2A2F35;
   --text-sec: #6C757D;
-  --wa-green: #8F2A5F;
-  --wa-green-d: #771E4D;
+  --wa-green: #AE5E95;
+  --wa-green-d: #9B4A82;
   --wa-green-text: #FFFFFF;
   --color-sep: #E9ECEF;
   --bg-hover: #F8EDF3;
@@ -114,8 +115,8 @@
   --text-main: #F1F3F5;
   --text-sec: #9EA8B6;
   --wa-green: #D66F9F;
-  --wa-green-d: #BD4C80;
-  --wa-green-text: #0B0C0E;
+  --wa-green-d: #C25890;
+  --wa-green-text: #FFFFFF;
   --color-sep: #1F242D;
   --bg-hover: #26161F;
   --shadow-card: 0 4px 12px -2px rgba(0,0,0,0.3), 0 2px 6px -1px rgba(0,0,0,0.2);
