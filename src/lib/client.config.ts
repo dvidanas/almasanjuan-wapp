@@ -17,7 +17,7 @@ export const clientConfig = {
     sunday:    null,
   },
 
-  services: [],
+  services: [] as Array<{ id?: string; name: string; description?: string; price: number; duration?: number }>,
 
   botName: "Giuli",
   botBooking: false,
