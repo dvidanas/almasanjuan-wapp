@@ -43,9 +43,9 @@ interface Stats {
 }
 
 const STATUS_STYLES = {
-  pending: "bg-amber-400 text-[#141d37]",
-  confirmed: "bg-teal-400 text-teal-950",
-  cancelled: "bg-[var(--color-wa-sep)] text-[var(--color-wa-text-sec)]",
+  pending: "bg-[var(--color-status-follow-bg)] text-[var(--color-status-follow-text)] border border-[var(--color-status-follow-border)]",
+  confirmed: "bg-[var(--color-status-closed-bg)] text-[var(--color-status-closed-text)] border border-[var(--color-status-closed-border)]",
+  cancelled: "bg-[var(--color-status-inactive-bg)] text-[var(--color-status-inactive-text)] border border-[var(--color-status-inactive-border)]",
 };
 const STATUS_LABELS = { pending: "Pendiente", confirmed: "Confirmado", cancelled: "Cancelado" };
 
@@ -173,7 +173,7 @@ function MiniCalendar({
                     compact ? "text-xs" : "text-sm"
                   } font-medium ${
                     isSelected
-                      ? "bg-[#6ea8fe] text-white shadow-sm"
+                      ? "bg-[var(--color-wa-green)] text-[var(--color-wa-green-text)] shadow-sm"
                       : isToday
                       ? "border-[1.5px] border-[var(--color-wa-green)] text-[var(--color-wa-green)] font-bold"
                       : "text-[var(--color-wa-text-main)] hover:bg-[var(--color-wa-hover)]"
@@ -181,7 +181,7 @@ function MiniCalendar({
                 >
                   {dayNum}
                   {hasDot && !isSelected && (
-                    <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-blue-300" />
+                    <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-[var(--color-wa-green)]/60" />
                   )}
                 </button>
               );
@@ -194,12 +194,12 @@ function MiniCalendar({
       {!compact && (
         <div className="flex gap-4 pt-3 mt-1 border-t border-[var(--color-wa-sep)] flex-wrap">
           <div className="flex items-center gap-2 text-xs text-[var(--color-wa-text-sec)]">
-            <span className="w-2 h-2 rounded-full bg-blue-300" />
+            <span className="w-2 h-2 rounded-full bg-[var(--color-wa-green)]/60" />
             Tiene turnos
           </div>
           <div className="flex items-center gap-2 text-xs text-[var(--color-wa-text-sec)]">
-            <span className="w-4 h-4 rounded-full bg-[#6ea8fe] flex items-center justify-center">
-              <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+            <span className="w-4 h-4 rounded-full bg-[var(--color-wa-green)] flex items-center justify-center">
+              <svg className="w-2.5 h-2.5 text-[var(--color-wa-green-text)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
             </span>
@@ -250,7 +250,7 @@ function DayAppointmentCard({
   onEdit: (appointment: Appointment) => void;
 }) {
   const name = a.contact_name ?? a.contact_phone ?? "Sin nombre";
-  const accentColor = a.status === "pending" ? "#F59E0B" : a.status === "confirmed" ? "#2DD4BF" : "var(--color-wa-sep)";
+  const accentColor = a.status === "pending" ? "var(--color-status-follow-text)" : a.status === "confirmed" ? "var(--color-status-closed-text)" : "var(--color-status-inactive-text)";
 
   // Compute initials for the avatar
   const initials = name
@@ -286,10 +286,10 @@ function DayAppointmentCard({
           className="flex-shrink-0 w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold text-white shadow-inner select-none"
           style={{ 
             background: a.status === "cancelled" 
-              ? "var(--color-wa-sep)" 
+              ? "var(--color-status-inactive-bg)" 
               : a.status === "pending" 
-                ? "linear-gradient(135deg, #FBBF24, #F59E0B)" 
-                : "linear-gradient(135deg, #2DD4BF, #0D9488)"
+                ? "linear-gradient(135deg, var(--color-status-follow-border), var(--color-status-follow-text))" 
+                : "linear-gradient(135deg, var(--color-status-closed-border), var(--color-status-closed-text))"
           }}
         >
           {initials}
@@ -405,7 +405,7 @@ function DayAppointmentCard({
           {a.status === "pending" && (
             <button
               onClick={() => onStatusChange(a.id, "confirmed")}
-              className="text-xs px-4 py-2 bg-teal-500 text-white rounded-full font-semibold hover:bg-teal-600 active:scale-95 transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
+              className="text-xs px-4 py-2 bg-[var(--color-status-closed-bg)] text-[var(--color-status-closed-text)] border border-[var(--color-status-closed-border)] rounded-full font-semibold hover:opacity-90 active:scale-95 transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
@@ -416,7 +416,7 @@ function DayAppointmentCard({
           {a.status === "confirmed" && (
             <button
               onClick={() => onStatusChange(a.id, "cancelled")}
-              className="text-xs px-4 py-2 bg-red-500 text-white rounded-full font-semibold hover:bg-red-600 active:scale-95 transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
+              className="text-xs px-4 py-2 bg-[var(--color-temp-hot-bg)] text-[var(--color-temp-hot-text)] border border-[var(--color-temp-hot-border)] rounded-full font-semibold hover:opacity-90 active:scale-95 transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -427,7 +427,7 @@ function DayAppointmentCard({
           {a.status === "pending" && (
             <button
               onClick={() => onStatusChange(a.id, "cancelled")}
-              className="text-xs px-4 py-2 bg-red-500 text-white rounded-full font-semibold hover:bg-red-600 active:scale-95 transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
+              className="text-xs px-4 py-2 bg-[var(--color-temp-hot-bg)] text-[var(--color-temp-hot-text)] border border-[var(--color-temp-hot-border)] rounded-full font-semibold hover:opacity-90 active:scale-95 transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
             >
               <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -450,7 +450,7 @@ function DayAppointmentCard({
           {/* Edit Action Button */}
           <button
             onClick={() => onEdit(a)}
-            className="text-xs px-4 py-2 bg-amber-500 text-white rounded-full font-semibold hover:bg-amber-600 active:scale-95 transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
+            className="text-xs px-4 py-2 bg-[var(--color-status-follow-bg)] text-[var(--color-status-follow-text)] border border-[var(--color-status-follow-border)] rounded-full font-semibold hover:opacity-90 active:scale-95 transition-all shadow-sm flex items-center gap-1.5 cursor-pointer"
           >
             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />

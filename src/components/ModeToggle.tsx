@@ -20,16 +20,18 @@ export function ModeToggle({ conversationId, mode, onChange }: Props) {
   return (
     <button
       onClick={toggle}
-      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
+      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border transition-all duration-150 active:scale-95 cursor-pointer ${
         mode === "AI"
-          ? "bg-[var(--color-wa-green)] text-[var(--color-wa-green-text)] hover:bg-[var(--color-wa-green-dark)]"
-          : "bg-amber-500 text-[var(--color-wa-green-text)] hover:bg-amber-600"
+          ? "bg-[var(--color-wa-green)] text-[var(--color-wa-green-text)] border-[var(--color-wa-green)] hover:bg-[var(--color-wa-green-dark)]"
+          : "bg-[var(--color-status-follow-bg)] text-[var(--color-status-follow-text)] border-[var(--color-status-follow-border)] hover:bg-[var(--color-wa-hover)]"
       }`}
     >
       <span
-        className={`w-1.5 h-1.5 rounded-full bg-white`}
+        className={`w-1.5 h-1.5 rounded-full ${
+          mode === "AI" ? "bg-[var(--color-wa-green-text)]" : "bg-[var(--color-status-follow-text)]"
+        }`}
       />
-      {mode === "AI" ? "IA" : "HUMANO"}
+      {mode === "AI" ? "IA Activa" : "Mano Humana"}
     </button>
   );
 }

@@ -38,10 +38,10 @@ interface DetailData {
 }
 
 const STATUS_STYLES: Record<Lead["status"], string> = {
-  nuevo: "bg-blue-500 text-[var(--color-wa-green-text)]",
-  seguimiento: "bg-yellow-500 text-[var(--color-wa-green-text)]",
-  cerrado: "bg-[var(--color-wa-green)] text-[var(--color-wa-green-text)]",
-  descartado: "bg-[var(--color-wa-sep)] text-[var(--color-wa-text-main)]",
+  nuevo: "bg-[var(--color-status-new-bg)] text-[var(--color-status-new-text)] border border-[var(--color-status-new-border)]",
+  seguimiento: "bg-[var(--color-status-follow-bg)] text-[var(--color-status-follow-text)] border border-[var(--color-status-follow-border)]",
+  cerrado: "bg-[var(--color-status-closed-bg)] text-[var(--color-status-closed-text)] border border-[var(--color-status-closed-border)]",
+  descartado: "bg-[var(--color-status-inactive-bg)] text-[var(--color-status-inactive-text)] border border-[var(--color-status-inactive-border)]",
 };
 
 const STATUS_LABELS: Record<Lead["status"], string> = {
@@ -65,20 +65,20 @@ function parseSummary(s: string | null | undefined): SummaryData | null {
 }
 
 function tempAvatarBg(temp: string | null | undefined): string {
-  if (temp === "caliente") return "bg-red-500";
-  if (temp === "tibio") return "bg-yellow-500";
-  if (temp === "frio") return "bg-blue-500";
+  if (temp === "caliente") return "bg-[var(--color-temp-hot-bg)]";
+  if (temp === "tibio") return "bg-[var(--color-temp-warm-bg)]";
+  if (temp === "frio") return "bg-[var(--color-temp-cold-bg)]";
   return "bg-[var(--color-wa-sep)]";
 }
 
 function tempAvatarText(temp: string | null | undefined): string {
-  return temp ? "text-[var(--color-wa-green-text)]" : "text-[var(--color-wa-text-sec)]";
+  return temp ? "text-[var(--color-wa-text-main)]" : "text-[var(--color-wa-text-sec)]";
 }
 
 function tempBadgeStyle(temp: string): string {
-  if (temp === "caliente") return "bg-red-100 text-red-700";
-  if (temp === "tibio") return "bg-yellow-100 text-yellow-700";
-  return "bg-blue-100 text-blue-700";
+  if (temp === "caliente") return "bg-[var(--color-temp-hot-bg)] text-[var(--color-temp-hot-text)] border border-[var(--color-temp-hot-border)]";
+  if (temp === "tibio") return "bg-[var(--color-temp-warm-bg)] text-[var(--color-temp-warm-text)] border border-[var(--color-temp-warm-border)]";
+  return "bg-[var(--color-temp-cold-bg)] text-[var(--color-temp-cold-text)] border border-[var(--color-temp-cold-border)]";
 }
 
 function tempEmoji(temp: string): string {
@@ -522,11 +522,11 @@ export default function LeadsPage() {
                 <h3 className="text-sm font-semibold uppercase tracking-wider text-[var(--color-wa-text-sec)] mb-3">Últimos mensajes</h3>
                 <div className="space-y-2">
                   {previewMessages.map((m, i) => (
-                    <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
-                      <div className={`max-w-[82%] px-3 py-2 rounded-xl text-sm leading-relaxed ${
+                    <div key={i} className={`flex ${m.role === "user" ? "justify-start" : "justify-end"}`}>
+                      <div className={`max-w-[82%] px-3 py-2 rounded-xl text-sm leading-relaxed border ${
                         m.role === "user"
-                          ? "bg-[var(--color-wa-green)] text-[var(--color-wa-green-text)] rounded-br-sm"
-                          : "bg-[var(--color-wa-bg-main)] text-[var(--color-wa-text-main)] rounded-bl-sm"
+                          ? "bg-[var(--color-wa-bubble-in)] text-[var(--color-wa-text-main)] border-[var(--color-wa-sep)]/50 rounded-tl-sm"
+                          : "bg-[var(--color-wa-bubble-out)] text-[var(--color-wa-text-main)] border-[var(--color-wa-green)]/15 rounded-tr-sm"
                       }`}>
                         {m.content.length > 140 ? m.content.slice(0, 140) + "…" : m.content}
                       </div>

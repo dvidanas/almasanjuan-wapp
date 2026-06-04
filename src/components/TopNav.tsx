@@ -68,10 +68,22 @@ export function TopNav() {
     <header className="h-14 flex-shrink-0 flex items-stretch justify-between bg-[var(--color-wa-header)] border-b border-[var(--color-wa-sep)] z-40">
       {/* Left: name */}
       <div className="flex items-center px-4 flex-shrink-0">
-        <div className="flex flex-col leading-none">
-          <span className="text-sm font-bold text-[var(--color-wa-text-main)]">{clientConfig.businessName}</span>
-          <span className="text-[10px] text-[var(--color-wa-text-sec)] mt-0.5">Panel de gestión</span>
-        </div>
+        <svg width="150" height="40" viewBox="0 0 150 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="select-none">
+          {/* ALMA (Charcoal Slate / var(--text-main)) */}
+          <text x="5" y="24" fontFamily="Georgia, serif" fontSize="18" fontWeight="normal" fill="var(--text-main)" letterSpacing="0.04em">ALMa</text>
+          
+          {/* The V with Hair Strand */}
+          <path d="M57 14 C58 21, 60 30, 62.5 30 C65.5 30, 69 20, 72 10" stroke="var(--wa-green)" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+          
+          {/* Hair strand */}
+          <path d="M72 10 C73 4, 76 0, 78 3 C80 5, 77 12, 73 15" stroke="var(--text-main)" strokeWidth="0.8" strokeLinecap="round" />
+          
+          {/* San Juan (Plum / var(--wa-green)) */}
+          <text x="79" y="24" fontFamily="-apple-system, BlinkMacSystemFont, sans-serif" fontSize="9.5" fontWeight="500" fill="var(--wa-green)" letterSpacing="0.01em">San Juan</text>
+          
+          {/* Subtitle */}
+          <text x="5" y="34" fontFamily="-apple-system, BlinkMacSystemFont, sans-serif" fontSize="5.2" fontWeight="600" fill="var(--text-sec)" letterSpacing="0.12em">DEPILACIÓN DEFINITIVA LÁSER</text>
+        </svg>
       </div>
 
       {/* Center: tabs */}

@@ -183,7 +183,10 @@ export function ConversationPanel({ conversation, onModeChange, onDelete, onBack
       {/* Input */}
       <div className="px-4 py-3 bg-[var(--color-wa-header)] flex-shrink-0 flex gap-3 items-end">
         {mode === "AI" ? (
-          <div className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-[var(--color-wa-input)] rounded-lg shadow-sm border border-[var(--color-wa-sep)]">
+          <div 
+            className="flex-1 flex items-center justify-center gap-2.5 px-4 py-3 bg-gradient-to-r from-[var(--color-wa-hover)] to-[var(--color-wa-bubble-out)] rounded-xl shadow-inner border border-[var(--color-wa-green)]/20 animate-pulse"
+            style={{ animationDuration: "4s" }}
+          >
             <svg
               className="w-5 h-5 text-[var(--color-wa-green)] flex-shrink-0"
               fill="none"
@@ -197,8 +200,8 @@ export function ConversationPanel({ conversation, onModeChange, onDelete, onBack
                 d="M9.75 3.104v5.714a2.25 2.25 0 01-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 014.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15M14.25 3.104c.251.023.501.05.75.082M19.8 15l-1.57.393A9.065 9.065 0 0112 15a9.065 9.065 0 00-6.23-.607L5 14.5m14.8.5l1.196 4.786A1.875 1.875 0 0119.128 21H4.872a1.875 1.875 0 01-1.868-1.714L4.2 14.5"
               />
             </svg>
-            <span className="text-sm text-[var(--color-wa-text-sec)]">
-              Modo IA activo — el bot responde automáticamente
+            <span className="text-sm font-semibold text-[var(--color-wa-green)]">
+              Asistente Giuli activa — respondiendo automáticamente
             </span>
           </div>
         ) : (

@@ -67,43 +67,30 @@ function LoginForm() {
     }}>
 
       {/* Brand */}
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.75rem" }}>
-        <div style={{
-          width: "4.5rem",
-          height: "4.5rem",
-          borderRadius: "50%",
-          background: "radial-gradient(circle, var(--bg-panel-r) 0%, var(--bg-input) 100%)",
-          border: "2.5px solid var(--wa-green)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          boxShadow: "var(--shadow-card)",
-          color: "var(--wa-green)",
-          marginBottom: "0.5rem"
-        }}>
-          <svg style={{ width: "2rem", height: "2rem" }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="6" cy="6" r="3" />
-            <circle cx="6" cy="18" r="3" />
-            <line x1="9.8" y1="8.2" x2="20" y2="17" />
-            <line x1="9.8" y1="15.8" x2="20" y2="7" />
-          </svg>
-        </div>
-        <h1 style={{
-          fontSize: "1.5rem",
-          fontWeight: 700,
-          letterSpacing: "0.08em",
-          color: "var(--text-main)",
-          margin: 0,
-        }}>
-          ALMA SAN JUAN
-        </h1>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "0.5rem" }}>
+        <svg width="220" height="80" viewBox="0 0 220 80" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginBottom: "0.5rem" }}>
+          {/* ALMA (Charcoal Slate / var(--text-main)) */}
+          <text x="25" y="44" fontFamily="Georgia, serif" fontSize="28" fontWeight="normal" fill="var(--text-main)" letterSpacing="0.05em">ALMa</text>
+          
+          {/* The V with Hair Strand */}
+          <path d="M102 24 C104 36, 107 50, 111 50 C116 50, 122 33, 127 16" stroke="var(--wa-green)" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round" />
+          
+          {/* Hair strand: coming out from the top-right of the V, loops elegantly */}
+          <path d="M127 16 C129 6, 134 0, 137 5 C140 9, 136 19, 129 25" stroke="var(--text-main)" strokeWidth="1.25" strokeLinecap="round" />
+          
+          {/* San Juan (Plum / var(--wa-green)) */}
+          <text x="138" y="44" fontFamily="-apple-system, BlinkMacSystemFont, sans-serif" fontSize="13" fontWeight="500" fill="var(--wa-green)" letterSpacing="0.02em">San Juan</text>
+          
+          {/* DEPILACIÓN DEFINITIVA LÁSER */}
+          <text x="110" y="66" textAnchor="middle" fontFamily="-apple-system, BlinkMacSystemFont, sans-serif" fontSize="7" fontWeight="600" fill="var(--text-sec)" letterSpacing="0.28em">DEPILACIÓN DEFINITIVA LÁSER</text>
+        </svg>
         <p style={{
           color: "var(--text-sec)",
           fontSize: "0.75rem",
           letterSpacing: "0.15em",
           textTransform: "uppercase",
           margin: 0,
-          fontWeight: 500
+          fontWeight: 600
         }}>
           Ingresá tu código
         </p>

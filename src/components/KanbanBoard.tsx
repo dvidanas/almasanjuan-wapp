@@ -21,11 +21,35 @@ interface KanbanBoardProps {
 }
 
 const COLUMNS: { id: Lead["status"]; label: string; color: string }[] = [
-  { id: "nuevo", label: "Nuevo", color: "border-blue-500" },
-  { id: "seguimiento", label: "Seguimiento", color: "border-yellow-500" },
-  { id: "cerrado", label: "Cerrado", color: "border-[var(--color-wa-green)]" },
-  { id: "descartado", label: "Descartado", color: "border-[var(--color-wa-sep)]" },
+  { id: "nuevo", label: "Nuevo", color: "border-[var(--color-status-new-text)]" },
+  { id: "seguimiento", label: "Seguimiento", color: "border-[var(--color-status-follow-text)]" },
+  { id: "cerrado", label: "Cerrado", color: "border-[var(--color-status-closed-text)]" },
+  { id: "descartado", label: "Descartado", color: "border-[var(--color-status-inactive-text)]" },
 ];
+
+interface SummaryData {
+  resumen: string;
+  interes: string;
+  temperatura: "frio" | "tibio" | "caliente";
+  siguiente_paso: string;
+}
+
+function parseSummary(s: string | null | undefined): SummaryData | null {
+  if (!s) return null;
+  try { return JSON.parse(s) as SummaryData; } catch { return null; }
+}
+
+function tempBadgeStyle(temp: string): string {
+  if (temp === "caliente") return "bg-[var(--color-temp-hot-bg)] text-[var(--color-temp-hot-text)] border border-[var(--color-temp-hot-border)]";
+  if (temp === "tibio") return "bg-[var(--color-temp-warm-bg)] text-[var(--color-temp-warm-text)] border border-[var(--color-temp-warm-border)]";
+  return "bg-[var(--color-temp-cold-bg)] text-[var(--color-temp-cold-text)] border border-[var(--color-temp-cold-border)]";
+}
+
+function tempEmoji(temp: string): string {
+  if (temp === "caliente") return "🔥";
+  if (temp === "tibio") return "🌡️";
+  return "❄️";
+}
 
 function displayName(lead: Lead): string {
   return lead.conv_name ?? lead.name ?? `+${lead.conv_phone}`;
@@ -72,22 +96,28 @@ export function KanbanBoard({ leads, onSelectLead, onStatusChange }: KanbanBoard
             <div className="flex-1 overflow-y-auto p-3 space-y-3 bg-[var(--color-wa-bg-main)]/30">
               {columnLeads.map((lead) => {
                 const name = displayName(lead);
+                const sm = parseSummary(lead.summary);
                 return (
                   <div
                     key={lead.id}
                     draggable
                     onDragStart={() => handleDragStart(lead.id)}
                     onClick={() => onSelectLead(lead.id)}
-                    className="bg-[var(--color-wa-panel-l)] p-4 rounded-xl border border-[var(--color-wa-sep)] shadow-sm cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow relative"
+                    className="bg-[var(--color-wa-panel-l)] p-4 rounded-xl border border-[var(--color-wa-sep)] shadow-sm cursor-grab active:cursor-grabbing hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 relative"
                   >
-                    <h4 className="font-medium text-[var(--color-wa-text-main)] text-sm mb-1 line-clamp-1">{name}</h4>
+                    <h4 className="font-semibold text-[var(--color-wa-text-main)] text-sm mb-1 line-clamp-1">{name}</h4>
                     <p className="text-xs text-[var(--color-wa-text-sec)] line-clamp-2">
                       {lead.business || lead.problem || `Sin detalles adicionales`}
                     </p>
-                    <div className="mt-3 flex items-center justify-between">
+                    <div className="mt-3 flex items-center justify-between flex-wrap gap-2">
                       <span className="text-[10px] text-[var(--color-wa-text-sec)] font-medium bg-[var(--color-wa-bg-main)] px-1.5 py-0.5 rounded">
                         {new Date(lead.created_at * 1000).toLocaleDateString()}
                       </span>
+                      {sm && (
+                        <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${tempBadgeStyle(sm.temperatura)}`}>
+                          {tempEmoji(sm.temperatura)} {sm.temperatura}
+                        </span>
+                      )}
                     </div>
                   </div>
                 );

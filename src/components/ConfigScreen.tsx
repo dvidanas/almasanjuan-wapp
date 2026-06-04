@@ -11,15 +11,15 @@ export function ConfigScreen({ missing, onContinue }: Props) {
   const allRequired = ["GEMINI_API_KEY"];
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-start justify-center py-16 px-4">
+    <div className="min-h-screen bg-[var(--color-wa-bg-main)] text-[var(--color-wa-text-main)] flex items-start justify-center py-16 px-4">
       <div className="w-full max-w-2xl">
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="bg-[var(--color-wa-panel-l)] rounded-2xl shadow-md border border-[var(--color-wa-sep)] overflow-hidden">
           {/* Header */}
-          <div className="bg-amber-50 border-b border-amber-100 px-6 py-5">
+          <div className="bg-[var(--color-status-follow-bg)] border-b border-[var(--color-status-follow-border)] px-6 py-5">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-[var(--color-status-follow-border)]/45 flex items-center justify-center">
                 <svg
-                  className="w-5 h-5 text-amber-600"
+                  className="w-5 h-5 text-[var(--color-status-follow-text)]"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -33,10 +33,10 @@ export function ConfigScreen({ missing, onContinue }: Props) {
                 </svg>
               </div>
               <div>
-                <h2 className="text-base font-semibold text-gray-900">
+                <h2 className="text-base font-semibold text-[var(--color-status-follow-text)]">
                   Configuración incompleta
                 </h2>
-                <p className="text-sm text-gray-600">
+                <p className="text-xs text-[var(--color-wa-text-sec)] mt-0.5">
                   Faltan variables de entorno para iniciar el sistema.
                 </p>
               </div>
@@ -46,7 +46,7 @@ export function ConfigScreen({ missing, onContinue }: Props) {
           <div className="px-6 py-6 space-y-6">
             {/* Estado de variables */}
             <div>
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">
+              <h3 className="text-sm font-semibold text-[var(--color-wa-text-main)] mb-3">
                 Variables de entorno requeridas
               </h3>
               <ul className="space-y-2">
@@ -55,20 +55,20 @@ export function ConfigScreen({ missing, onContinue }: Props) {
                   return (
                     <li
                       key={key}
-                      className="flex items-start gap-3 p-3 rounded-lg bg-gray-50"
+                      className="flex items-start gap-3 p-3 rounded-lg bg-[var(--color-wa-bg-main)] border border-[var(--color-wa-sep)]/60"
                     >
                       <span
-                        className={`mt-0.5 flex-shrink-0 text-sm ${
-                          ok ? "text-emerald-500" : "text-red-500"
+                        className={`mt-0.5 flex-shrink-0 text-sm font-bold ${
+                          ok ? "text-[var(--color-status-closed-text)]" : "text-[var(--color-temp-hot-text)]"
                         }`}
                       >
                         {ok ? "✓" : "✗"}
                       </span>
                       <div>
-                        <code className="text-sm font-mono font-medium text-gray-800">
+                        <code className="text-sm font-mono font-medium text-[var(--color-wa-text-main)]">
                           {key}
                         </code>
-                        <p className="text-xs text-gray-500 mt-0.5">
+                        <p className="text-xs text-[var(--color-wa-text-sec)] mt-0.5">
                           {ENV_DESCRIPTIONS[key] ?? key}
                         </p>
                       </div>
@@ -80,10 +80,10 @@ export function ConfigScreen({ missing, onContinue }: Props) {
 
             {/* Pasos */}
             <div>
-              <h3 className="text-sm font-semibold text-gray-700 mb-3">
+              <h3 className="text-sm font-semibold text-[var(--color-wa-text-main)] mb-3">
                 Pasos para configurar
               </h3>
-              <ol className="space-y-2 text-sm text-gray-600">
+              <ol className="space-y-2 text-sm text-[var(--color-wa-text-sec)]">
                 {[
                   "Obtener GEMINI_API_KEY desde aistudio.google.com.",
                   "Configurar las variables en EasyPanel → Environment.",
@@ -91,7 +91,7 @@ export function ConfigScreen({ missing, onContinue }: Props) {
                   "Al iniciar, el sistema mostrará un código QR para vincular WhatsApp.",
                 ].map((step, i) => (
                   <li key={i} className="flex items-start gap-2">
-                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-gray-200 text-gray-600 text-xs flex items-center justify-center font-medium">
+                    <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[var(--color-wa-sep)] text-[var(--color-wa-text-sec)] text-xs flex items-center justify-center font-semibold">
                       {i + 1}
                     </span>
                     <span>{step}</span>
@@ -101,18 +101,18 @@ export function ConfigScreen({ missing, onContinue }: Props) {
             </div>
 
             {/* Acción */}
-            <div className="pt-2 border-t border-gray-100">
+            <div className="pt-4 border-t border-[var(--color-wa-sep)]">
               {onContinue ? (
                 <button
                   onClick={onContinue}
-                  className="flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-lg bg-gray-900 hover:bg-gray-700 text-white text-sm font-medium transition-colors"
+                  className="flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl bg-[var(--color-wa-green)] text-[var(--color-wa-green-text)] text-sm font-semibold hover:bg-[var(--color-wa-green-dark)] active:scale-[0.98] transition-all cursor-pointer"
                 >
                   Continuar de todas formas
                 </button>
               ) : (
                 <a
                   href="/"
-                  className="flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-lg bg-gray-900 hover:bg-gray-700 text-white text-sm font-medium transition-colors"
+                  className="flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl bg-[var(--color-wa-green)] text-[var(--color-wa-green-text)] text-sm font-semibold hover:bg-[var(--color-wa-green-dark)] active:scale-[0.98] transition-all text-center"
                 >
                   Ir al dashboard
                 </a>

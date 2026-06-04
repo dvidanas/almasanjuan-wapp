@@ -15,6 +15,36 @@
   --color-wa-sep: var(--color-sep);
   --color-wa-hover: var(--bg-hover);
 
+  /* Status Colors */
+  --color-status-new-bg: var(--status-new-bg);
+  --color-status-new-text: var(--status-new-text);
+  --color-status-new-border: var(--status-new-border);
+
+  --color-status-follow-bg: var(--status-follow-bg);
+  --color-status-follow-text: var(--status-follow-text);
+  --color-status-follow-border: var(--status-follow-border);
+
+  --color-status-closed-bg: var(--status-closed-bg);
+  --color-status-closed-text: var(--status-closed-text);
+  --color-status-closed-border: var(--status-closed-border);
+
+  --color-status-inactive-bg: var(--status-inactive-bg);
+  --color-status-inactive-text: var(--status-inactive-text);
+  --color-status-inactive-border: var(--status-inactive-border);
+
+  /* Temperature Colors */
+  --color-temp-hot-bg: var(--temp-hot-bg);
+  --color-temp-hot-text: var(--temp-hot-text);
+  --color-temp-hot-border: var(--temp-hot-border);
+
+  --color-temp-warm-bg: var(--temp-warm-bg);
+  --color-temp-warm-text: var(--temp-warm-text);
+  --color-temp-warm-border: var(--temp-warm-border);
+
+  --color-temp-cold-bg: var(--temp-cold-bg);
+  --color-temp-cold-text: var(--temp-cold-text);
+  --color-temp-cold-border: var(--temp-cold-border);
+
   /* Overrides de Tailwind v4 para esquinas más redondeadas en toda la app */
   --radius-sm: 8px;
   --radius-md: 12px;
@@ -25,41 +55,101 @@
 }
 
 :root {
-  --bg-main: #F7F6F3;
+  --bg-main: #F6F7F9;
   --bg-panel-l: #FFFFFF;
   --bg-panel-r: #FFFFFF;
-  --bg-bubble-in: #EFECE5;
-  --bg-bubble-out: #FAF3E6;
-  --bg-input: #F3F1EB;
+  --bg-bubble-in: #EBF0F3;
+  --bg-bubble-out: #FDF2F7;
+  --bg-input: #F0F2F5;
   --bg-header: #FFFFFF;
-  --text-main: #1C1C1A;
-  --text-sec: #7C7871;
-  --wa-green: #A88544;
-  --wa-green-d: #937237;
+  --text-main: #2A2F35;
+  --text-sec: #6C757D;
+  --wa-green: #8F2A5F;
+  --wa-green-d: #771E4D;
   --wa-green-text: #FFFFFF;
-  --color-sep: #E5E2DA;
-  --bg-hover: #F2EFE6;
-  --shadow-card: 0 2px 8px -1px rgba(28,28,26,0.04), 0 4px 16px -2px rgba(28,28,26,0.02);
-  --shadow-card-hover: 0 10px 25px -5px rgba(28,28,26,0.08), 0 8px 16px -6px rgba(28,28,26,0.04);
+  --color-sep: #E9ECEF;
+  --bg-hover: #F8EDF3;
+  --shadow-card: 0 2px 8px -1px rgba(42,47,53,0.04), 0 4px 16px -2px rgba(42,47,53,0.02);
+  --shadow-card-hover: 0 10px 25px -5px rgba(42,47,53,0.08), 0 8px 16px -6px rgba(42,47,53,0.04);
+
+  /* Clean Status Palette - Light Mode */
+  --status-new-bg: #EEF2F6;
+  --status-new-text: #3B82F6;
+  --status-new-border: #E2E8F0;
+
+  --status-follow-bg: #FEF3C7;
+  --status-follow-text: #D97706;
+  --status-follow-border: #FDE68A;
+
+  --status-closed-bg: #ECFDF5;
+  --status-closed-text: #10B981;
+  --status-closed-border: #A7F3D0;
+
+  --status-inactive-bg: #F3F4F6;
+  --status-inactive-text: #6B7280;
+  --status-inactive-border: #E5E7EB;
+
+  /* Temperature Palette - Light Mode */
+  --temp-hot-bg: #FEE2E2;
+  --temp-hot-text: #EF4444;
+  --temp-hot-border: #FCA5A5;
+
+  --temp-warm-bg: #FFFBEB;
+  --temp-warm-text: #D97706;
+  --temp-warm-border: #FDE68A;
+
+  --temp-cold-bg: #EFF6FF;
+  --temp-cold-text: #3B82F6;
+  --temp-cold-border: #BFDBFE;
 }
 
 .dark {
-  --bg-main: #090A0C;
-  --bg-panel-l: #121316;
-  --bg-panel-r: #121316;
-  --bg-bubble-in: #1A1C22;
-  --bg-bubble-out: #2E281C;
-  --bg-input: #1A1C22;
-  --bg-header: #121316;
-  --text-main: #F3F3F5;
-  --text-sec: #8D9099;
-  --wa-green: #D4B26F;
-  --wa-green-d: #BD9C59;
-  --wa-green-text: #090A0C;
-  --color-sep: #1C1E24;
-  --bg-hover: #1A1C23;
+  --bg-main: #0B0C0E;
+  --bg-panel-l: #131518;
+  --bg-panel-r: #131518;
+  --bg-bubble-in: #1E2228;
+  --bg-bubble-out: #2F1B24;
+  --bg-input: #1E2228;
+  --bg-header: #131518;
+  --text-main: #F1F3F5;
+  --text-sec: #9EA8B6;
+  --wa-green: #D66F9F;
+  --wa-green-d: #BD4C80;
+  --wa-green-text: #0B0C0E;
+  --color-sep: #1F242D;
+  --bg-hover: #26161F;
   --shadow-card: 0 4px 12px -2px rgba(0,0,0,0.3), 0 2px 6px -1px rgba(0,0,0,0.2);
   --shadow-card-hover: 0 12px 24px -4px rgba(0,0,0,0.4), 0 4px 12px -2px rgba(0,0,0,0.3);
+
+  /* Clean Status Palette - Dark Mode */
+  --status-new-bg: rgba(59, 130, 246, 0.15);
+  --status-new-text: #60A5FA;
+  --status-new-border: rgba(59, 130, 246, 0.3);
+
+  --status-follow-bg: rgba(217, 119, 6, 0.15);
+  --status-follow-text: #FBBF24;
+  --status-follow-border: rgba(217, 119, 6, 0.3);
+
+  --status-closed-bg: rgba(16, 185, 129, 0.15);
+  --status-closed-text: #34D399;
+  --status-closed-border: rgba(16, 185, 129, 0.3);
+
+  --status-inactive-bg: rgba(107, 114, 128, 0.1);
+  --status-inactive-text: #9CA3AF;
+  --status-inactive-border: rgba(107, 114, 128, 0.2);
+
+  /* Temperature Palette - Dark Mode */
+  --temp-hot-bg: rgba(239, 68, 68, 0.15);
+  --temp-hot-text: #F87171;
+  --temp-hot-border: rgba(239, 68, 68, 0.3);
+
+  --temp-warm-bg: rgba(245, 158, 11, 0.15);
+  --temp-warm-text: #FBBF24;
+  --temp-warm-border: rgba(245, 158, 11, 0.3);
+
+  --temp-cold-bg: rgba(59, 130, 246, 0.15);
+  --temp-cold-text: #60A5FA;
+  --temp-cold-border: rgba(59, 130, 246, 0.3);
 }
 
 body {
