@@ -95,7 +95,7 @@ function LoginForm() {
           color: "var(--text-main)",
           margin: 0,
         }}>
-          STUDIO BANDITO
+          ALMA SAN JUAN
         </h1>
         <p style={{
           color: "var(--text-sec)",
