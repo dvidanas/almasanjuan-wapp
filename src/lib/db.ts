@@ -202,6 +202,58 @@ function migrate(db: Database.Database) {
     );
   `);
 
+  // Catálogo de servicios/promociones para la landing (API pública)
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS servicios (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      categoria TEXT CHECK(categoria IN ('mujer','hombre','unisex')) NOT NULL,
+      nombre TEXT NOT NULL,
+      precio INTEGER NOT NULL,
+      duracion_min INTEGER NOT NULL,
+      es_promo INTEGER NOT NULL DEFAULT 1,
+      destacado INTEGER NOT NULL DEFAULT 0,
+      orden INTEGER NOT NULL DEFAULT 0,
+      activo INTEGER NOT NULL DEFAULT 1,
+      created_at INTEGER NOT NULL DEFAULT (unixepoch()),
+      updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_servicios_categoria ON servicios(categoria, activo);
+  `);
+
+  // Seed inicial del catálogo si la tabla está vacía
+  {
+    const count = db.prepare<[], { count: number }>("SELECT COUNT(*) as count FROM servicios").get()!;
+    if (count.count === 0) {
+      const ins = db.prepare(
+        "INSERT INTO servicios (categoria, nombre, precio, duracion_min, destacado) VALUES (?, ?, ?, ?, ?)"
+      );
+      const mujer: Array<[string, number, number, number]> = [
+        ["Rostro completo", 18500, 15, 1],
+        ["Cavado, tira de cola o axilas", 30000, 20, 0],
+        ["Cavado, axilas y tira de cola o bozo", 33500, 30, 0],
+        ["Media pierna, cavado y axilas", 42500, 35, 0],
+        ["Piernas completas y cavado o axilas", 43500, 40, 0],
+        ["Piernas completas, cavado y axilas o tira de cola", 45500, 45, 0],
+        ["Media pierna, cavado, axilas y tira de cola", 45500, 40, 0],
+        ["Piernas, cavado, axilas y tira de cola o bozo", 48500, 45, 0],
+        ["Piernas completas, cavado, axilas y rostro", 49500, 50, 0],
+        ["Piernas completas, cavado, axilas y brazos completos", 53300, 60, 0],
+        ["Cuerpo completo", 73000, 120, 0],
+      ];
+      const hombre: Array<[string, number, number, number]> = [
+        ["Rostro completo", 18500, 20, 1],
+        ["Tórax completo o espalda completa", 25500, 15, 0],
+        ["Piernas completas", 34000, 30, 0],
+        ["Tórax completo y espalda completa", 38500, 25, 0],
+        ["Piernas completas y espalda completa o tórax completo", 47000, 50, 0],
+        ["Piernas, tórax completo y espalda completa", 55000, 60, 0],
+        ["Cuerpo completo", 73000, 120, 0],
+      ];
+      for (const [nombre, precio, duracion, destacado] of mujer) ins.run("mujer", nombre, precio, duracion, destacado);
+      for (const [nombre, precio, duracion, destacado] of hombre) ins.run("hombre", nombre, precio, duracion, destacado);
+    }
+  }
 }
 
 // ── Tipos ──────────────────────────────────────────────────
@@ -1005,4 +1057,110 @@ export function getMetrics(): MetricsResult {
     appointmentsByDay,
     messagesByDay,
   };
+}
+
+// ── Catálogo de servicios (landing) ─────────────────────────
+
+export interface Servicio {
+  id: number;
+  categoria: "mujer" | "hombre" | "unisex";
+  nombre: string;
+  precio: number;
+  duracion_min: number;
+  es_promo: number;
+  destacado: number;
+  orden: number;
+  activo: number;
+  created_at: number;
+  updated_at: number;
+}
+
+export interface ServicioPublic {
+  id: number;
+  categoria: "mujer" | "hombre" | "unisex";
+  nombre: string;
+  precio: number;
+  duracion_min: number;
+  destacado: boolean;
+}
+
+export function listServicios(includeInactive = false): Servicio[] {
+  const query = includeInactive
+    ? "SELECT * FROM servicios ORDER BY categoria ASC, orden ASC, precio ASC"
+    : "SELECT * FROM servicios WHERE activo = 1 ORDER BY categoria ASC, orden ASC, precio ASC";
+  return getDb().prepare<[], Servicio>(query).all();
+}
+
+export function listServiciosPublic(): ServicioPublic[] {
+  const rows = getDb()
+    .prepare<[], Servicio>(
+      "SELECT * FROM servicios WHERE activo = 1 ORDER BY categoria ASC, precio ASC"
+    )
+    .all();
+  return rows.map((r) => ({
+    id: r.id,
+    categoria: r.categoria,
+    nombre: r.nombre,
+    precio: r.precio,
+    duracion_min: r.duracion_min,
+    destacado: !!r.destacado,
+  }));
+}
+
+export function createServicio(data: {
+  categoria: Servicio["categoria"];
+  nombre: string;
+  precio: number;
+  duracion_min: number;
+  es_promo?: number;
+  destacado?: number;
+  orden?: number;
+  activo?: number;
+}): number {
+  const res = getDb()
+    .prepare(
+      `INSERT INTO servicios (categoria, nombre, precio, duracion_min, es_promo, destacado, orden, activo)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
+    )
+    .run(
+      data.categoria,
+      data.nombre,
+      data.precio,
+      data.duracion_min,
+      data.es_promo ?? 1,
+      0,
+      data.orden ?? 0,
+      data.activo ?? 1
+    );
+  const id = res.lastInsertRowid as number;
+  if (data.destacado) setServicioDestacado(id, true);
+  return id;
+}
+
+export function updateServicio(
+  id: number,
+  data: Partial<Pick<Servicio, "categoria" | "nombre" | "precio" | "duracion_min" | "es_promo" | "orden" | "activo">>
+): void {
+  const entries = Object.entries(data).filter(([, v]) => v !== undefined);
+  if (!entries.length) return;
+  const fields = entries.map(([k]) => `${k} = ?`).join(", ");
+  const values = entries.map(([, v]) => v);
+  getDb().prepare(`UPDATE servicios SET ${fields}, updated_at = unixepoch() WHERE id = ?`).run(...values, id);
+}
+
+export function setServicioDestacado(id: number, value: boolean): void {
+  const db = getDb();
+  const svc = db.prepare<[number], Servicio>("SELECT * FROM servicios WHERE id = ?").get(id);
+  if (!svc) return;
+  const tx = db.transaction(() => {
+    if (value) {
+      db.prepare("UPDATE servicios SET destacado = 0, updated_at = unixepoch() WHERE categoria = ? AND id != ?").run(svc.categoria, id);
+    }
+    db.prepare("UPDATE servicios SET destacado = ?, updated_at = unixepoch() WHERE id = ?").run(value ? 1 : 0, id);
+  });
+  tx();
+}
+
+export function deleteServicio(id: number): void {
+  getDb().prepare("DELETE FROM servicios WHERE id = ?").run(id);
 }
